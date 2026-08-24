@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+/* 2. Tailwind framework second */
+@import "tailwindcss";
+
+*{  font-family: "Outfit", sans-serif;
+  
+}
+
+/* src/index.css */
+
+@tailwind utilities;
+
+/* APPLY THE CODE BELOW THESE LINES */
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
+
+/* Subtle entrance animations for UI elements (keeps styles unchanged) */
+@layer components {
+  .animate-card-enter {
+    animation: cardEnter 420ms cubic-bezier(.2,.9,.2,1) both;
+  }
+
+  @keyframes cardEnter {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-pop-scale {
+    animation: popScale 260ms cubic-bezier(.2,.9,.2,1) both;
+    transform-origin: center;
+  }
+
+  @keyframes popScale {
+    from { opacity: 0; transform: scale(.96); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+}
+
+

@@ -1,0 +1,12 @@
+*{
+    ::-webkit-scrollbar {
+  display: none;
+  background: red; /* Optional: just to be safe */
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+}
