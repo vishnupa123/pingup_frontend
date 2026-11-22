@@ -1,8 +1,7 @@
-import { CheckCircle, MapPin, Calendar, PenBox, UserCheck, UserPlus, MessageCircle, MoreHorizontal, LogOut } from 'lucide-react'
+import { CheckCircle, MapPin, Calendar, PenBox, UserCheck, UserPlus, MessageCircle, MoreHorizontal, LogOut, Trash2 } from 'lucide-react'
 import moment from 'moment'
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MdDelete } from "react-icons/md";
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -117,25 +116,27 @@ const UserProfileInfo = ({ user, posts = [], profileId, setShowEdit, currentUser
               <PenBox className='cursor-pointer w-5 h-5 text-green-400 group-hover:text-pink-500 transition-colors shrink-0' />
             </button>
 
-            <button onClick={handleDeleteAccount} className="cursor-pointer">
-              <MdDelete className='text-[44px] pt-6 text-red-600'/>
-            </button>
-
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setShowMenu((v) => !v)}
                 className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors mt-0.5"
                 aria-label="Profile menu"
               >
-                <MoreHorizontal className="w-6 h-6 text-black" />
+                <MoreHorizontal className="w-5 h-5 text-black" />
               </button>
               {showMenu && (
-                <div className="absolute right-0 top-full mt-2 w-36 bg-white border border-gray-100 rounded-lg shadow-lg z-50 py-1">
+                <div className="absolute right-0 top-full mt-2 w-40 bg-white border border-gray-100 rounded-lg shadow-lg z-50 py-1">
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
                   >
                     <LogOut size={16} /> Logout
+                  </button>
+                  <button
+                    onClick={() => { setShowMenu(false); handleDeleteAccount(); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 size={16} /> Delete Account
                   </button>
                 </div>
               )}

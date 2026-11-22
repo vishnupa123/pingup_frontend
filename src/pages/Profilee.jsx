@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import toast from 'react-hot-toast';
+import { API_URL, authHeaders } from '../lib/api';
 import Loading from '../components/Loading';
 import UserProfileInfo from '../components/UserProfileInfo';
 import EditProfilePop from '../components/EditProfilePop';
-import { Grid, Image, Heart, MoreHorizontal, LogOut } from 'lucide-react';
+import { Grid, Image, Heart, MoreHorizontal, LogOut, Trash2 } from 'lucide-react';
 import MyProfile from '../components/MyProfile';
 
 const Profilee = () => {
@@ -68,6 +70,20 @@ const Profilee = () => {
     window.location.reload();
   };
 
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) return;
+    try {
+      await axios.delete(`${API_URL}/api/users/delete`, { headers: authHeaders() });
+      toast.success('Account deleted successfully');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/login');
+      window.location.reload();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete account');
+    }
+  };
+
   // Newest upload first (the "last" post you added appears at the top).
   const byNewest = (a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0);
   const allPosts = Array.isArray(post) ? [...post].sort(byNewest) : [];
@@ -100,15 +116,21 @@ const Profilee = () => {
                   className="p-2 bg-white/90 hover:bg-white border border-gray-200 rounded-full shadow-sm"
                   aria-label="Profile menu"
                 >
-                  <MoreHorizontal className="w-6 h-6 text-black" />
+                  <MoreHorizontal className="w-5 h-5 text-black" />
                 </button>
                 {showMenu && (
-                  <div className="absolute right-0 mt-2 w-36 bg-white border border-gray-100 rounded-lg shadow-lg py-1">
+                  <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-100 rounded-lg shadow-lg py-1">
                     <button
                       onClick={handleLogout}
                       className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
                     >
                       <LogOut size={16} /> Logout
+                    </button>
+                    <button
+                      onClick={() => { setShowMenu(false); handleDeleteAccount(); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 size={16} /> Delete Account
                     </button>
                   </div>
                 )}
