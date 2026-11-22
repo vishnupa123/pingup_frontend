@@ -4,12 +4,27 @@ import { Plus, X } from 'lucide-react';
 import { API_URL, authHeaders, getCurrentUser } from '../lib/api';
 import StoryCreatorModal from './StoryCreatorModal';
 
+const SEEN_KEY = 'seenStoryIds';
+
 const StoriesRow = () => {
   const [stories, setStories] = useState([]);
   const [myStories, setMyStories] = useState([]);
   const [openCreator, setOpenCreator] = useState(false);
   const [active, setActive] = useState(null);
+  const [seenIds, setSeenIds] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); } catch { return []; }
+  });
   const me = getCurrentUser();
+
+  const markSeen = (id) => {
+    if (!id) return;
+    setSeenIds((prev) => {
+      if (prev.includes(id)) return prev;
+      const next = [...prev, id];
+      localStorage.setItem(SEEN_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
 
   const fetchStories = async () => {
     try {
@@ -31,6 +46,7 @@ const StoriesRow = () => {
 
   useEffect(() => {
     if (!active) return;
+    if (active._id) markSeen(active._id);
     const t = setTimeout(() => setActive(null), 5000);
     return () => clearTimeout(t);
   }, [active]);
@@ -46,7 +62,7 @@ const StoriesRow = () => {
           onClick={() => (myStories.length > 0 ? setActive(myStories[0]) : setOpenCreator(true))}
           className="flex flex-col items-center gap-2 shrink-0 cursor-pointer"
         >
-          <div className={`w-14 h-14 rounded-full border-2 ${myStories.length > 0 ? 'border-pink-500 bg-pink-50 text-pink-600' : 'border-dashed border-indigo-300 bg-indigo-50 text-indigo-600'} flex items-center justify-center hover:opacity-90 transition`}>
+          <div className={`w-14 h-14 rounded-full border-2 ${myStories.length > 0 ? (seenIds.includes(myStories[0]._id) ? 'border-gray-300 bg-gray-50 text-gray-500' : 'border-pink-500 bg-pink-50 text-pink-600') : 'border-dashed border-indigo-300 bg-indigo-50 text-indigo-600'} flex items-center justify-center hover:opacity-90 transition`}>
             <Plus size={22} />
           </div>
           <span className="text-[11px] text-gray-600 font-medium">{myStories.length > 0 ? 'Your Story' : 'Add Story'}</span>
@@ -55,8 +71,8 @@ const StoriesRow = () => {
         {stories.map((story) => {
           const author = story.author || {};
           return (
-            <button key={story._id} onClick={() => setActive(story)} className="flex flex-col items-center gap-2 shrink-0 cursor-pointer">
-              <div className="w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-pink-500 to-indigo-500">
+            <button key={story._id} onClick={() => { markSeen(story._id); setActive(story); }} className="flex flex-col items-center gap-2 shrink-0 cursor-pointer">
+              <div className={`w-14 h-14 rounded-full p-[2px] ${seenIds.includes(story._id) ? 'bg-gray-300' : 'bg-gradient-to-tr from-pink-500 to-indigo-500'}`}>
                 <div className="w-full h-full rounded-full bg-white p-[2px]">
                   <img
                     src={author.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(author.fullName || 'User')}`}
