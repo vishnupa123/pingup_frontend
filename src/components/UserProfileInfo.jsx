@@ -1,6 +1,6 @@
-import { CheckCircle, MapPin, Calendar, PenBox, UserCheck, UserPlus, MessageCircle, MoreHorizontal, LogOut, Trash2 } from 'lucide-react'
+import { CheckCircle, MapPin, Calendar, PenBox, UserCheck, UserPlus, MessageCircle } from 'lucide-react'
 import moment from 'moment'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -10,8 +10,6 @@ const UserProfileInfo = ({ user, posts = [], profileId, setShowEdit, currentUser
   const [isFollowing, setIsFollowing] = useState(false)
   const [followersCount, setFollowersCount] = useState(user.followers?.length || 0)
   const [isMutualFollow, setIsMutualFollow] = useState(false)
-  const [showMenu, setShowMenu] = useState(false)
-  const menuRef = useRef(null)
 
   const normalizeUserId = (value) => String(typeof value === 'object' ? value?._id || value?.id || '' : value || '')
   const hasUserId = (list = [], targetId) => list.some((item) => normalizeUserId(item) === String(targetId))
@@ -60,41 +58,7 @@ const UserProfileInfo = ({ user, posts = [], profileId, setShowEdit, currentUser
   }
 
 
-  const handleDeleteAccount = async () => {
-    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-      try {
-        const token = localStorage.getItem('token');
-        await axios.delete(`${import.meta.env.VITE_API_URL}/api/users/delete`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        toast.success("Account deleted successfully");
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/login');
-        window.location.reload();
-      } catch (error) {
-        console.error("Error deleting account:", error);
-        toast.error(error.response?.data?.message || "Failed to delete account");
-      }
-    }
-  };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setShowMenu(false);
-    navigate('/login');
-    window.location.reload();
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setShowMenu(false);
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   return (
     <div className='w-full'>
@@ -108,40 +72,12 @@ const UserProfileInfo = ({ user, posts = [], profileId, setShowEdit, currentUser
           <CheckCircle className='w-5 h-5 text-blue-500 shrink-0' />
         )}
         {!profileId && (
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setShowEdit(true)}
-              className='p-1.5 hover:bg-slate-50 rounded-lg transition-colors group mt-0.5'
-            >
-              <PenBox className='cursor-pointer w-5 h-5 text-green-400 group-hover:text-pink-500 transition-colors shrink-0' />
-            </button>
-
-            <div className="relative" ref={menuRef}>
-              <button
-                onClick={() => setShowMenu((v) => !v)}
-                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors mt-0.5"
-                aria-label="Profile menu"
-              >
-                <MoreHorizontal className="w-5 h-5 text-black" />
-              </button>
-              {showMenu && (
-                <div className="absolute right-0 top-full mt-2 w-40 bg-white border border-gray-100 rounded-lg shadow-lg z-50 py-1">
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                  >
-                    <LogOut size={16} /> Logout
-                  </button>
-                  <button
-                    onClick={() => { setShowMenu(false); handleDeleteAccount(); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 size={16} /> Delete Account
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+          <button
+            onClick={() => setShowEdit(true)}
+            className='p-1.5 hover:bg-slate-50 rounded-lg transition-colors group mt-0.5'
+          >
+            <PenBox className='cursor-pointer w-5 h-5 text-green-400 group-hover:text-pink-500 transition-colors shrink-0' />
+          </button>
         )}
 
         {/* Follow / Following button when viewing someone else's profile */}
