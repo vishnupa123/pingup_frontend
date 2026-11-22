@@ -6,15 +6,21 @@ import StoryCreatorModal from './StoryCreatorModal';
 
 const StoriesRow = () => {
   const [stories, setStories] = useState([]);
+  const [myStories, setMyStories] = useState([]);
   const [openCreator, setOpenCreator] = useState(false);
   const [active, setActive] = useState(null);
 
   const fetchStories = async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/api/stories/feed`, { headers: authHeaders() });
-      setStories(Array.isArray(data) ? data : []);
+      const [feedRes, myRes] = await Promise.all([
+        axios.get(`${API_URL}/api/stories/feed`, { headers: authHeaders() }),
+        axios.get(`${API_URL}/api/stories/me`, { headers: authHeaders() }),
+      ]);
+      setStories(Array.isArray(feedRes.data) ? feedRes.data : []);
+      setMyStories(Array.isArray(myRes.data) ? myRes.data : []);
     } catch {
       setStories([]);
+      setMyStories([]);
     }
   };
 
@@ -40,7 +46,7 @@ const StoriesRow = () => {
           onClick={() => setOpenCreator(true)}
           className="flex flex-col items-center gap-2 shrink-0"
         >
-          <div className="w-14 h-14 rounded-full border-2 border-dashed border-indigo-300 bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition">
+          <div className={`w-14 h-14 rounded-full border-2 ${myStories.length > 0 ? 'border-pink-500 bg-pink-50 text-pink-600' : 'border-dashed border-indigo-300 bg-indigo-50 text-indigo-600'} flex items-center justify-center hover:opacity-90 transition`}>
             <Plus size={22} />
           </div>
           <span className="text-[11px] text-gray-600 font-medium">Add Story</span>
