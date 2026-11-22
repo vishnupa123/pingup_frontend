@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import axios from 'axios'
 import { API_URL, authHeaders, isMutualFollow } from '../lib/api'
 import { countUnread, markConversationSeen } from '../lib/unread'
+import { playReceiveSound } from '../lib/sound'
 import { useSocket } from './SocketContext'
 import { useMe } from './UserContext'
 
@@ -79,6 +80,7 @@ export const NotificationProvider = ({ children }) => {
       setPreviews((prev) => ({ ...prev, [otherId]: msg }))
       if (!fromMe) {
         setCounts((prev) => ({ ...prev, [otherId]: (prev[otherId] || 0) + 1 }))
+        playReceiveSound()
       }
     }
 

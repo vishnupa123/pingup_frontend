@@ -32,7 +32,7 @@ const RecentMsg = () => {
               <div className="relative shrink-0">
                 <img src={avatar} alt={name} className="w-10 h-10 rounded-full object-cover border border-gray-100" />
                 {unread > 0 && (
-                  <span className='absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold shadow'>
+                  <span className='absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] px-0.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-semibold leading-none shadow'>
                     {unread > 99 ? '99+' : unread}
                   </span>
                 )}

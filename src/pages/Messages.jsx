@@ -50,7 +50,7 @@ const Messages = () => {
                       className='w-14 h-14 rounded-full object-cover border border-gray-100'
                     />
                     {unread > 0 && (
-                      <span className='absolute -top-1 -right-1 min-w-[19px] h-[19px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold shadow'>
+                      <span className='absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-0.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-semibold leading-none shadow'>
                         {unread > 99 ? '99+' : unread}
                       </span>
                     )}

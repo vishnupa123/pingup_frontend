@@ -27,7 +27,7 @@ const MenuItems = ({ sidebarOpen, setSidebarOpen }) => {
               <span className='relative flex items-center'>
                 <Icon className='w-5 h-5' />
                 {to === '/messages' && totalUnread > 0 && (
-                  <span className='absolute -top-2 -right-2.5 min-w-[17px] h-[17px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold shadow'>
+                  <span className='absolute -top-1.5 -right-2 min-w-[14px] h-[14px] px-0.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-semibold leading-none shadow'>
                     {totalUnread > 99 ? '99+' : totalUnread}
                   </span>
                 )}
