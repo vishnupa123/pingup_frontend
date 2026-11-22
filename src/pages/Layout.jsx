@@ -2,6 +2,7 @@ import React from 'react'
 import SideBar from '../components/SideBar'
 import BottomNav from '../components/BottomNav'
 import { Outlet } from 'react-router-dom'
+import { Menu, X } from 'lucide-react'
 import Loading from '../components/Loading'
 
 const Layout = () => {
@@ -16,10 +17,25 @@ const Layout = () => {
           {/* 1. LEFT SIDEBAR (desktop) */}
           <SideBar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black/30 z-20 sm:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+
           {/* 2. MAIN CONTENT AREA */}
           <div className="flex-1 w-full bg-slate-50 overflow-y-auto no-scrollbar relative pb-20 sm:pb-0">
             <Outlet />
           </div>
+
+          {/* MOBILE MENU TOGGLE */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="absolute top-4 left-4 z-50 p-2 bg-white rounded-xl shadow-md border border-gray-100 sm:hidden cursor-pointer"
+          >
+            {sidebarOpen ? <X className="w-5 h-5 text-gray-700" /> : <Menu className="w-5 h-5 text-gray-700" />}
+          </button>
 
           {/* MOBILE BOTTOM NAV */}
           <BottomNav />
