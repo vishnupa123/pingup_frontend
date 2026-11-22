@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Plus, X } from 'lucide-react';
-import { API_URL, authHeaders } from '../lib/api';
+import { API_URL, authHeaders, getCurrentUser } from '../lib/api';
 import StoryCreatorModal from './StoryCreatorModal';
 
 const StoriesRow = () => {
@@ -9,6 +9,7 @@ const StoriesRow = () => {
   const [myStories, setMyStories] = useState([]);
   const [openCreator, setOpenCreator] = useState(false);
   const [active, setActive] = useState(null);
+  const me = getCurrentUser();
 
   const fetchStories = async () => {
     try {
@@ -43,13 +44,13 @@ const StoriesRow = () => {
 
       <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
         <button
-          onClick={() => setOpenCreator(true)}
+          onClick={() => (myStories.length > 0 ? setActive(myStories[0]) : setOpenCreator(true))}
           className="flex flex-col items-center gap-2 shrink-0"
         >
           <div className={`w-14 h-14 rounded-full border-2 ${myStories.length > 0 ? 'border-pink-500 bg-pink-50 text-pink-600' : 'border-dashed border-indigo-300 bg-indigo-50 text-indigo-600'} flex items-center justify-center hover:opacity-90 transition`}>
             <Plus size={22} />
           </div>
-          <span className="text-[11px] text-gray-600 font-medium">Add Story</span>
+          <span className="text-[11px] text-gray-600 font-medium">{myStories.length > 0 ? 'Your Story' : 'Add Story'}</span>
         </button>
 
         {stories.map((story) => {
@@ -76,9 +77,19 @@ const StoriesRow = () => {
       {active && (
         <div className="fixed inset-0 z-[120] bg-black/85 flex items-center justify-center p-4" onClick={() => setActive(null)}>
           <div className="relative w-full max-w-md h-[75vh] bg-black rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setActive(null)} className="absolute top-3 right-3 z-10 text-white/80 hover:text-white">
-              <X size={22} />
-            </button>
+            <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+              {String(active.author?._id || active.author) === String(me?.id) && (
+                <button
+                  onClick={() => { setActive(null); setOpenCreator(true); }}
+                  className="px-2.5 py-1 rounded-md bg-white/20 text-white text-xs hover:bg-white/30"
+                >
+                  Add
+                </button>
+              )}
+              <button onClick={() => setActive(null)} className="text-white/80 hover:text-white">
+                <X size={22} />
+              </button>
+            </div>
             <div className="absolute top-3 left-3 z-10 flex items-center gap-2 text-white">
               <img
                 src={active.author?.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(active.author?.fullName || 'User')}`}
