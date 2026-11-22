@@ -103,7 +103,7 @@ const Messages = () => {
             })
           ) : (
             <div className='py-4'>
-              {friends.length > 0 && (
+              {friends.length > 0 ? (
                 <div className='mb-4'>
                   <p className='text-sm font-medium text-gray-700 mb-3'>Friends</p>
                   <div className='flex gap-4 overflow-x-auto no-scrollbar pb-2'>
@@ -126,6 +126,17 @@ const Messages = () => {
                       )
                     })}
                   </div>
+                </div>
+              ) : (
+                <div className='text-center py-6'>
+                  <p className='text-gray-400 text-sm mb-3'>No friends yet. Discover people to follow.</p>
+                  <button
+                    type='button'
+                    onClick={() => navigate('/discover')}
+                    className='px-4 py-2 bg-pink-500 text-white text-sm rounded-lg hover:bg-pink-600 transition cursor-pointer'
+                  >
+                    Go to Discover
+                  </button>
                 </div>
               )}
               <p className='text-center text-gray-400 py-4 text-sm'>
