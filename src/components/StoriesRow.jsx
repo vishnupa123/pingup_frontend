@@ -62,6 +62,7 @@ const StoriesRow = () => {
   useEffect(() => {
     if (!active?._id) return;
     markSeen(active._id);
+    if (active.mediaType === 'video') return undefined;
     const t = setTimeout(() => {
       setViewer((v) => {
         if (!v.items.length) return v;
@@ -70,7 +71,7 @@ const StoriesRow = () => {
       });
     }, 5000);
     return () => clearTimeout(t);
-  }, [active?._id, viewer.index]);
+  }, [active?._id, active?.mediaType, viewer.index]);
 
   return (
     <div>
@@ -153,7 +154,7 @@ const StoriesRow = () => {
                   <p className="text-white text-lg italic text-center whitespace-pre-wrap break-words">{active.content}</p>
                 </div>
               ) : active.mediaType === 'video' ? (
-                <video src={active.mediaUrl} controls autoPlay className="w-full h-full object-contain" />
+                <video src={active.mediaUrl} controls autoPlay onEnded={goNext} className="w-full h-full object-contain" />
               ) : (
                 <img src={active.mediaUrl} alt="" className="w-full h-full object-contain" />
               )}
