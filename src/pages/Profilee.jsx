@@ -1,20 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Loading from '../components/Loading';
 import UserProfileInfo from '../components/UserProfileInfo';
 import EditProfilePop from '../components/EditProfilePop';
-import { Grid, Image, Heart } from 'lucide-react';
+import { Grid, Image, Heart, MoreHorizontal, LogOut } from 'lucide-react';
 import MyProfile from '../components/MyProfile';
 
 const Profilee = () => {
   const { profileId } = useParams();
+  const navigate = useNavigate();
   const [users, setUsers] = useState(null);
   const [post, setPost] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('posts');
   const [showEdit, setShowEdit] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
 
   const fetchProfileData = async () => {
     setLoading(true);
@@ -49,6 +52,22 @@ const Profilee = () => {
     fetchProfileData();
   }, [profileId]);
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setShowMenu(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setShowMenu(false);
+    navigate('/login');
+    window.location.reload();
+  };
+
   // Newest upload first (the "last" post you added appears at the top).
   const byNewest = (a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0);
   const allPosts = Array.isArray(post) ? [...post].sort(byNewest) : [];
@@ -72,7 +91,29 @@ const Profilee = () => {
         <div className='flex flex-col'>
 
           {/* Profile Header Card */}
-          <div className='bg-white shadow-sm overflow-hidden'>
+          <div className='bg-white shadow-sm overflow-hidden relative'>
+
+            {!profileId && (
+              <div className="absolute top-3 right-3 z-20" ref={menuRef}>
+                <button
+                  onClick={() => setShowMenu((v) => !v)}
+                  className="p-2 bg-white/90 hover:bg-white border border-gray-200 rounded-full shadow-sm"
+                  aria-label="Profile menu"
+                >
+                  <MoreHorizontal className="w-5 h-5 text-gray-700" />
+                </button>
+                {showMenu && (
+                  <div className="absolute right-0 mt-2 w-36 bg-white border border-gray-100 rounded-lg shadow-lg py-1">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut size={16} /> Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Cover Photo */}
             <div className='relative'>
