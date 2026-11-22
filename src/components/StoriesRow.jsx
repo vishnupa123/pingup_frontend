@@ -29,7 +29,7 @@ const StoriesRow = () => {
   }, [active]);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+    <div>
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-800">Stories</h3>
         <span className="text-xs text-gray-400">Visible to followers</span>
