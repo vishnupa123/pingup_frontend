@@ -4,6 +4,7 @@ import { assets } from '../assets/assets';
 import Loading from '../components/Loading';
 import Postscard from '../components/Postscard';
 import RecentMsg from '../components/RecentMsg';
+import StoriesRow from '../components/StoriesRow';
 import { API_URL } from '../lib/api';
 
 const Feed = () => {
@@ -57,7 +58,10 @@ const Feed = () => {
   return (
     <div className="max-w-[1400px] mx-auto sm:px-10 py-4 flex flex-col lg:flex-row gap-8 justify-between items-start">
       <div className="flex-1 w-full lg:max-w-[850px]">
-        <div className="mt-8 flex flex-col gap-8">
+        <div className="mt-4 mb-6">
+          <StoriesRow />
+        </div>
+        <div className="flex flex-col gap-8">
           {feed.map((post) => (
             <Postscard
               key={post._id}
