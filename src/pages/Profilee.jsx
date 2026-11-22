@@ -100,7 +100,7 @@ const Profilee = () => {
                   className="p-2 bg-white/90 hover:bg-white border border-gray-200 rounded-full shadow-sm"
                   aria-label="Profile menu"
                 >
-                  <MoreHorizontal className="w-5 h-5 text-gray-700" />
+                  <MoreHorizontal className="w-6 h-6 text-black" />
                 </button>
                 {showMenu && (
                   <div className="absolute right-0 mt-2 w-36 bg-white border border-gray-100 rounded-lg shadow-lg py-1">

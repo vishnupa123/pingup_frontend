@@ -127,7 +127,7 @@ const UserProfileInfo = ({ user, posts = [], profileId, setShowEdit, currentUser
                 className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors mt-0.5"
                 aria-label="Profile menu"
               >
-                <MoreHorizontal className="w-5 h-5 text-gray-600" />
+                <MoreHorizontal className="w-6 h-6 text-black" />
               </button>
               {showMenu && (
                 <div className="absolute right-0 top-full mt-2 w-36 bg-white border border-gray-100 rounded-lg shadow-lg z-50 py-1">
