@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MoreHorizontal, Trash2, Edit2, Heart, MessageCircle } from 'lucide-react';
 import axios from 'axios';
 import moment from 'moment';
@@ -61,6 +62,7 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
   const menuRef = useRef(null);
   const deleteTimerRef = useRef(null);
   const heartTimerRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -159,6 +161,7 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
   const userData = feed.user || feed.author || {};
   const profilePic = userData.profilePic || userData.profile_picture || 'https://ui-avatars.com/api/?name=User';
   const fullName = userData.fullName || userData.full_name || 'User';
+  const authorId = userData?._id || userData?.id || userData;
 
   // Only the post owner can see Edit/Delete.
   const getPostOwnerId = () => {
@@ -170,6 +173,12 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
   const isOwner = Boolean(
     resolvedUserId && postOwnerId && String(resolvedUserId) === String(postOwnerId)
   );
+
+  const goToProfile = () => {
+    if (!authorId) return;
+    if (resolvedUserId && String(authorId) === String(resolvedUserId)) navigate('/profile');
+    else navigate(`/profile/${authorId}`);
+  };
 
   const imageMedia = [
     ...(Array.isArray(feed.images) ? feed.images : []),
@@ -189,7 +198,7 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
       )}
 
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3 ">
+        <div className="flex items-center gap-3 cursor-pointer" onClick={goToProfile}>
           <img
             src={profilePic}
             className="w-10 h-10 rounded-full object-cover border border-gray-100"
@@ -197,7 +206,7 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
             onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=User'; }}
           />
           <div>
-            <div className="font-semibold text-sm text-gray-800">{fullName}</div>
+            <div className="font-semibold text-sm text-gray-800 hover:underline">{fullName}</div>
             <div className="text-xs text-gray-400">{moment(feed.createdAt).fromNow()}</div>
           </div>
         </div>
