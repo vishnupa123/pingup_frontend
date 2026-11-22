@@ -66,12 +66,18 @@ const Connection = () => {
         headers: { Authorization: `Bearer ${token}` }
       })
       const user = res.data.user
+      const meId = String(user._id || user.id || '')
 
-      const [followersData, followingsData, connectionsData] = await Promise.all([
+      const [followersData, followingsData] = await Promise.all([
         normalizeUserList(user.followers || []),
-        normalizeUserList(user.following || []),
-        normalizeUserList(user.connections || [])
+        normalizeUserList(user.following || [])
       ])
+
+      // A "connection" is a mutual follow: they follow you and you follow them.
+      const connectionsData = followingsData.filter((following) =>
+        String(following._id) !== meId &&
+        followersData.some((follower) => String(follower._id) === String(following._id))
+      )
 
       setFollowers(followersData)
       setFollowings(followingsData)
@@ -95,7 +101,8 @@ const Connection = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      setFollowings(prev => prev.filter(u => u._id !== userId))
+      setFollowings(prev => prev.filter(u => String(u._id) !== String(userId)))
+      setConnections(prev => prev.filter(u => String(u._id) !== String(userId)))
       toast.success('Unfollowed successfully')
     } catch (err) {
       console.error('Unfollow failed:', err)
@@ -111,12 +118,18 @@ const Connection = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      setFollowings(prev => {
-        const alreadyFollowing = prev.find(u => u._id === userId)
-        if (alreadyFollowing) return prev
-        const user = followers.find(u => u._id === userId)
-        return user ? [...prev, user] : prev
-      })
+      const followedUser = followers.find(u => String(u._id) === String(userId))
+      setFollowings(prev =>
+        prev.some(u => String(u._id) === String(userId)) || !followedUser
+          ? prev
+          : [...prev, followedUser]
+      )
+      // They already follow you, so following back makes them a connection.
+      setConnections(prev =>
+        prev.some(u => String(u._id) === String(userId)) || !followedUser
+          ? prev
+          : [...prev, followedUser]
+      )
       toast.success('Followed back!')
     } catch (err) {
       console.error('Follow back failed:', err)
@@ -229,7 +242,11 @@ const Connection = () => {
           </h2>
           
           {currentData?.length === 0 && (
-            <p className='text-sm text-gray-400 text-center py-8'>No {currentTab.toLowerCase()} yet.</p>
+            <p className='text-sm text-gray-400 text-center py-8'>
+              {currentTab === 'Connections'
+                ? 'No connections yet. Follow each other to connect and chat.'
+                : `No ${currentTab.toLowerCase()} yet.`}
+            </p>
           )}
 
           <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'>
@@ -272,14 +289,21 @@ const Connection = () => {
                   {/* Action Buttons */}
                   <div className='flex gap-1.5 justify-center mt-3'>
                     {currentTab === 'Followers' && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleFollowBack(user._id) }}
-                        className='flex-1 p-1.5 cursor-pointer bg-green-500 text-white rounded-md hover:bg-green-600 transition font-semibold text-xs flex items-center justify-center gap-1'
-                        title='Follow back'
-                      >
-                        <Check size={14} />
-                        Follow
-                      </button>
+                      followings.some(f => String(f._id) === String(user._id)) ? (
+                        <span className='flex-1 p-1.5 rounded-md bg-purple-50 text-purple-600 font-semibold text-xs flex items-center justify-center gap-1'>
+                          <Check size={14} />
+                          Connected
+                        </span>
+                      ) : (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleFollowBack(user._id) }}
+                          className='flex-1 p-1.5 cursor-pointer bg-green-500 text-white rounded-md hover:bg-green-600 transition font-semibold text-xs flex items-center justify-center gap-1'
+                          title='Follow back'
+                        >
+                          <Check size={14} />
+                          Follow
+                        </button>
+                      )
                     )}
 
                     {currentTab === 'Following' && (

@@ -36,6 +36,11 @@ const UserProfileInfo = ({ user, posts = [], profileId, setShowEdit, currentUser
     setIsMutualFollow(isFollowing && userFollowsMe)
   }, [currentUser, user, isFollowing])
 
+  // Connections = people who follow this profile and are also followed by me.
+  const connectionsCount = currentUser
+    ? (user.followers || []).filter((follower) => hasUserId(currentUser.following || [], follower)).length
+    : 0
+
   const handleFollowToggle = async () => {
     const token = localStorage.getItem('token')
     const previous = isFollowing
@@ -171,7 +176,7 @@ const UserProfileInfo = ({ user, posts = [], profileId, setShowEdit, currentUser
             <span className='text-xs font-medium text-gray-500'>Following</span>
           </div>
           <div className='flex items-baseline gap-1.5'>
-            <span className='text-lg font-bold text-pink-500'>{user.connections?.length || 0}</span>
+            <span className='text-lg font-bold text-pink-500'>{connectionsCount}</span>
             <span className='text-xs font-medium text-gray-500'>Connections</span>
           </div>
         </Link>
