@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Loading from '../components/Loading'
 import toast from 'react-hot-toast'
+import { useNotifications } from '../context/NotificationContext'
 import {
   BarChart,
   Bar,
@@ -23,11 +24,16 @@ import {
 
 const Connection = () => {
   const navigate = useNavigate()
+  const { markAppReadByType } = useNotifications()
   const [currentTab, setCurrentTab] = useState('Followers')
   const [followers, setFollowers] = useState([])
   const [followings, setFollowings] = useState([])
   const [connections, setConnections] = useState([])
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    markAppReadByType('follow')
+  }, [markAppReadByType])
 
   const fetchUserObject = async (userItem) => {
     if (!userItem) return null

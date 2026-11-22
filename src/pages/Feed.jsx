@@ -6,7 +6,7 @@ import Loading from '../components/Loading';
 import Postscard from '../components/Postscard';
 import RecentMsg from '../components/RecentMsg';
 import StoriesRow from '../components/StoriesRow';
-import NotificationBell from '../components/NotificationBell';
+import { useNotifications } from '../context/NotificationContext';
 import { API_URL } from '../lib/api';
 
 const PAGE_SIZE = 10;
@@ -32,6 +32,11 @@ const fetchFeedPage = async ({ pageParam = 1 }) => {
 const Feed = () => {
   const queryClient = useQueryClient();
   const sentinelRef = useRef(null);
+  const { markAppReadByType } = useNotifications();
+
+  useEffect(() => {
+    markAppReadByType('post');
+  }, [markAppReadByType]);
 
   const {
     data,
@@ -93,9 +98,8 @@ const Feed = () => {
   return (
     <div className="max-w-[1400px] mx-auto sm:px-10 py-4 flex flex-col lg:flex-row gap-8 justify-between items-start">
       <div className="flex-1 w-full lg:max-w-[850px]">
-        <div className="px-4 pt-2 pb-1 flex items-center justify-between sm:justify-end gap-3">
-          <img src={assets.logo} alt="PingUp" className="w-28 sm:hidden" />
-          <NotificationBell />
+        <div className="px-4 pt-2 pb-1 sm:hidden flex justify-end">
+          <img src={assets.logo} alt="PingUp" className="w-28" />
         </div>
         <div className="mt-2 mb-6">
           <StoriesRow />

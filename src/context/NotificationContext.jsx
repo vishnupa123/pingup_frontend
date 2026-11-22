@@ -15,6 +15,7 @@ export const NotificationProvider = ({ children }) => {
   const [counts, setCounts] = useState({})
   const [previews, setPreviews] = useState({})
   const [loading, setLoading] = useState(true)
+  const [appNotifications, setAppNotifications] = useState([])
 
   // Depends on the whole user object: right after login localStorage only has
   // id/name, and UserProvider replaces it with followers/following once
@@ -64,9 +65,20 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [me])
 
+  const refreshAppNotifications = useCallback(async () => {
+    if (!me?.id) return
+    try {
+      const { data } = await axios.get(`${API_URL}/api/notifications`, { headers: authHeaders() })
+      setAppNotifications(Array.isArray(data) ? data : [])
+    } catch {
+      setAppNotifications([])
+    }
+  }, [me?.id])
+
   useEffect(() => {
     refresh()
-  }, [refresh])
+    refreshAppNotifications()
+  }, [refresh, refreshAppNotifications])
 
   // Live incoming messages increase the badge and update the preview.
   useEffect(() => {
@@ -84,8 +96,16 @@ export const NotificationProvider = ({ children }) => {
       }
     }
 
+    const onAppNotification = (n) => {
+      setAppNotifications((prev) => [n, ...prev].slice(0, 30))
+    }
+
     socket.on('receive_message', onReceive)
-    return () => socket.off('receive_message', onReceive)
+    socket.on('notification', onAppNotification)
+    return () => {
+      socket.off('receive_message', onReceive)
+      socket.off('notification', onAppNotification)
+    }
   }, [socket, me?.id])
 
   const markSeen = useCallback((conversationId) => {
@@ -94,11 +114,22 @@ export const NotificationProvider = ({ children }) => {
     setCounts((prev) => ({ ...prev, [conversationId]: 0 }))
   }, [])
 
+  const markAppReadByType = useCallback(async (type) => {
+    try {
+      const unreadIds = appNotifications.filter((n) => !n.read && (!type || n.type === type)).map((n) => n._id)
+      if (unreadIds.length === 0) return
+      await Promise.all(unreadIds.map((id) => axios.patch(`${API_URL}/api/notifications/${id}/read`, {}, { headers: authHeaders() })))
+      setAppNotifications((prev) => prev.map((n) => (!type || n.type === type ? { ...n, read: true } : n)))
+    } catch {}
+  }, [appNotifications])
+
   const totalUnread = Object.values(counts).reduce((sum, n) => sum + (n || 0), 0)
+  const postUnread = appNotifications.filter((n) => n.type === 'post' && !n.read).length
+  const followUnread = appNotifications.filter((n) => n.type === 'follow' && !n.read).length
 
   const value = useMemo(
-    () => ({ users, counts, previews, totalUnread, markSeen, refresh, loading }),
-    [users, counts, previews, totalUnread, markSeen, refresh, loading]
+    () => ({ users, counts, previews, totalUnread, markSeen, refresh, loading, appNotifications, postUnread, followUnread, markAppReadByType, refreshAppNotifications }),
+    [users, counts, previews, totalUnread, markSeen, refresh, loading, appNotifications, postUnread, followUnread, markAppReadByType, refreshAppNotifications]
   )
 
   return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>

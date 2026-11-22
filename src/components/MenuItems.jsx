@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom'
 import { useNotifications } from '../context/NotificationContext'
 
 const MenuItems = ({ sidebarOpen, setSidebarOpen }) => {
-  const { totalUnread } = useNotifications()
+  const { totalUnread, postUnread, followUnread } = useNotifications()
 
   return (
     <div>
@@ -29,6 +29,16 @@ const MenuItems = ({ sidebarOpen, setSidebarOpen }) => {
                 {to === '/messages' && totalUnread > 0 && (
                   <span className='absolute -top-1.5 -right-2 min-w-[14px] h-[14px] px-0.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-semibold leading-none shadow'>
                     {totalUnread > 99 ? '99+' : totalUnread}
+                  </span>
+                )}
+                {to === '/' && postUnread > 0 && (
+                  <span className='absolute -top-1.5 -right-2 min-w-[14px] h-[14px] px-0.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-semibold leading-none shadow'>
+                    {postUnread > 99 ? '99+' : postUnread}
+                  </span>
+                )}
+                {to === '/connections' && followUnread > 0 && (
+                  <span className='absolute -top-1.5 -right-2 min-w-[14px] h-[14px] px-0.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-semibold leading-none shadow'>
+                    {followUnread > 99 ? '99+' : followUnread}
                   </span>
                 )}
               </span>

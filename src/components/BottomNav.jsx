@@ -12,7 +12,7 @@ const mobileNavItems = [
 ]
 
 const BottomNav = () => {
-  const { totalUnread } = useNotifications()
+  const { totalUnread, postUnread, followUnread } = useNotifications()
 
   return (
     <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-2 py-1.5 safe-area-pb">
@@ -33,6 +33,16 @@ const BottomNav = () => {
               {to === '/messages' && totalUnread > 0 && (
                 <span className="absolute -top-1.5 -right-2 min-w-[16px] h-[16px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none">
                   {totalUnread > 99 ? '99+' : totalUnread}
+                </span>
+              )}
+              {to === '/' && postUnread > 0 && (
+                <span className="absolute -top-1.5 -right-2 min-w-[16px] h-[16px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none">
+                  {postUnread > 99 ? '99+' : postUnread}
+                </span>
+              )}
+              {to === '/profile' && followUnread > 0 && (
+                <span className="absolute -top-1.5 -right-2 min-w-[16px] h-[16px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none">
+                  {followUnread > 99 ? '99+' : followUnread}
                 </span>
               )}
             </span>
