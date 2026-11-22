@@ -4,6 +4,7 @@ import { Send, Image as ImageIcon, Smile } from 'lucide-react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 import { API_URL, authHeaders, isMutualFollow } from '../lib/api'
+import { playSendSound } from '../lib/sound'
 import { useSocket } from '../context/SocketContext'
 import { useMe } from '../context/UserContext'
 import { useNotifications } from '../context/NotificationContext'
@@ -127,6 +128,7 @@ const Chat = () => {
           receiver: userId,
           message: body,
         })
+        playSendSound()
         setText('')
       } else {
         // Fallback when the socket is not connected: use the REST API.
@@ -136,6 +138,7 @@ const Chat = () => {
           { headers: authHeaders(), withCredentials: true }
         )
         if (data?.data) setMessages((prev) => mergeMessages([...prev, data.data]))
+        playSendSound()
         setText('')
       }
     } catch (error) {
