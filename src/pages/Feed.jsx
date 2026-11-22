@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { assets } from '../assets/assets';
 import Loading from '../components/Loading';
-import Storiesbar from '../components/Storiesbar';
 import Postscard from '../components/Postscard';
 import RecentMsg from '../components/RecentMsg';
 import { API_URL } from '../lib/api';
@@ -58,7 +57,6 @@ const Feed = () => {
   return (
     <div className="max-w-[1400px] mx-auto sm:px-10 py-4 flex flex-col lg:flex-row gap-8 justify-between items-start">
       <div className="flex-1 w-full lg:max-w-[850px]">
-        <Storiesbar />
         <div className="mt-8 flex flex-col gap-8">
           {feed.map((post) => (
             <Postscard
