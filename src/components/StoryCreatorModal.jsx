@@ -62,110 +62,93 @@ const StoryCreatorModal = ({ onClose, onCreated }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="w-full max-w-xl bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-sm bg-white rounded-xl shadow-xl overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
           <div className="flex items-center gap-2">
             {step !== 'choose' && (
-              <button onClick={() => { setStep('choose'); resetMedia(); }} className="p-1.5 rounded-full hover:bg-slate-100 text-slate-600">
-                <ArrowLeft size={18} />
+              <button onClick={() => { setStep('choose'); resetMedia(); }} className="p-1 rounded-md hover:bg-slate-100 text-slate-600">
+                <ArrowLeft size={16} />
               </button>
             )}
-            <h2 className="text-lg font-semibold text-slate-800">Add Story</h2>
+            <h2 className="text-sm font-semibold text-slate-800">Add Story</h2>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500">
-            <X size={18} />
+          <button onClick={onClose} className="p-1 rounded-md hover:bg-slate-100 text-slate-500">
+            <X size={16} />
           </button>
         </div>
 
-        <div className="p-5">
+        <div className="p-4">
           {step === 'choose' && (
-            <div>
-              <p className="text-sm text-slate-500 mb-4">Choose what you want to share. Your story will be visible to people who follow you.</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button
-                  onClick={() => setStep('text')}
-                  className="group border border-slate-200 rounded-xl p-5 text-left hover:border-indigo-400 hover:bg-indigo-50/40 transition"
-                >
-                  <div className="w-11 h-11 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center mb-3">
-                    <Type size={22} />
-                  </div>
-                  <h3 className="font-semibold text-slate-800">Text Story</h3>
-                  <p className="text-xs text-slate-500 mt-1">Write a short message with a background color.</p>
-                </button>
-
-                <button
-                  onClick={() => setStep('media')}
-                  className="group border border-slate-200 rounded-xl p-5 text-left hover:border-pink-400 hover:bg-pink-50/40 transition"
-                >
-                  <div className="w-11 h-11 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center mb-3">
-                    <ImagePlus size={22} />
-                  </div>
-                  <h3 className="font-semibold text-slate-800">Image / Video</h3>
-                  <p className="text-xs text-slate-500 mt-1">Upload a photo or a video (up to 30 seconds).</p>
-                </button>
-              </div>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setStep('text')}
+                className="flex flex-col items-center justify-center gap-2 border border-slate-200 rounded-lg py-5 hover:bg-slate-50 transition"
+              >
+                <Type size={22} className="text-indigo-600" />
+                <span className="text-sm font-medium text-slate-700">Text</span>
+              </button>
+              <button
+                onClick={() => setStep('media')}
+                className="flex flex-col items-center justify-center gap-2 border border-slate-200 rounded-lg py-5 hover:bg-slate-50 transition"
+              >
+                <ImagePlus size={22} className="text-pink-600" />
+                <span className="text-sm font-medium text-slate-700">Media</span>
+              </button>
             </div>
           )}
 
           {step === 'text' && (
-            <div className="space-y-4">
-              <div className="rounded-xl p-6 min-h-[220px] flex items-center justify-center" style={{ background }}>
+            <div className="space-y-3">
+              <div className="rounded-lg p-4 min-h-[160px] flex items-center justify-center" style={{ background }}>
                 <textarea
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  placeholder="Write your story..."
-                  className="w-full bg-transparent text-white text-xl font-semibold text-center placeholder:text-white/70 outline-none resize-none min-h-[140px]"
+                  placeholder="Write..."
+                  className="w-full bg-transparent text-white text-lg font-semibold text-center placeholder:text-white/70 outline-none resize-none min-h-[100px]"
                   maxLength={300}
                 />
               </div>
-              <div>
-                <p className="text-xs font-medium text-slate-500 mb-2">Background</p>
-                <div className="flex gap-2 flex-wrap">
-                  {BG_COLORS.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => setBackground(color)}
-                      className={`w-8 h-8 rounded-full border-2 ${background === color ? 'border-slate-800 scale-110' : 'border-transparent'}`}
-                      style={{ background: color }}
-                    />
-                  ))}
-                </div>
+              <div className="flex gap-2 justify-center">
+                {BG_COLORS.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setBackground(color)}
+                    className={`w-6 h-6 rounded-full border-2 ${background === color ? 'border-slate-800' : 'border-transparent'}`}
+                    style={{ background: color }}
+                  />
+                ))}
               </div>
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="w-full py-2.5 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 disabled:opacity-60 flex items-center justify-center gap-2"
+                className="w-full py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-60 flex items-center justify-center gap-2"
               >
-                <Send size={16} /> {loading ? 'Posting...' : 'Post Story'}
+                <Send size={14} /> {loading ? 'Posting...' : 'Post'}
               </button>
             </div>
           )}
 
           {step === 'media' && (
-            <div className="space-y-4">
-              <label className="block border-2 border-dashed border-slate-200 rounded-xl p-4 min-h-[220px] flex items-center justify-center cursor-pointer hover:border-pink-300 hover:bg-pink-50/20 transition overflow-hidden">
+            <div className="space-y-3">
+              <label className="block border border-dashed border-slate-300 rounded-lg p-3 min-h-[160px] flex items-center justify-center cursor-pointer hover:bg-slate-50 transition overflow-hidden">
                 {preview ? (
                   file?.type.startsWith('video/') ? (
-                    <video src={preview} controls className="max-h-[260px] rounded-lg" />
+                    <video src={preview} controls className="max-h-[200px] rounded-md" />
                   ) : (
-                    <img src={preview} alt="Preview" className="max-h-[260px] rounded-lg object-contain" />
+                    <img src={preview} alt="Preview" className="max-h-[200px] rounded-md object-contain" />
                   )
                 ) : (
-                  <div className="text-center">
-                    <ImagePlus className="w-10 h-10 text-slate-400 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-slate-700">Click to upload image or video</p>
-                    <p className="text-xs text-slate-400 mt-1">Video should be 30 seconds or less</p>
-                  </div>
+                  <ImagePlus className="w-8 h-8 text-slate-400" />
                 )}
                 <input type="file" accept="image/*,video/*" className="hidden" onChange={handleFile} />
               </label>
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="w-full py-2.5 rounded-lg bg-pink-600 text-white font-medium hover:bg-pink-700 disabled:opacity-60 flex items-center justify-center gap-2"
+                className="w-full py-2 rounded-lg bg-pink-600 text-white text-sm font-medium hover:bg-pink-700 disabled:opacity-60 flex items-center justify-center gap-2"
               >
-                <Send size={16} /> {loading ? 'Posting...' : 'Post Story'}
+                <Send size={14} /> {loading ? 'Posting...' : 'Post'}
               </button>
             </div>
           )}
