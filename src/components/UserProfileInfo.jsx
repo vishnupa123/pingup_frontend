@@ -137,11 +137,6 @@ const UserProfileInfo = ({ user, posts = [], profileId, setShowEdit, currentUser
 
       {/* Stats */}
       <div className='flex items-center flex-wrap gap-x-8 gap-y-3 mt-6 pt-4 border-t border-gray-100'>
-        <div className='flex items-baseline gap-1.5'>
-          <span className='text-lg font-bold text-pink-500'>{posts?.length || 0}</span>
-          <span className='text-xs font-medium text-gray-500'>Posts</span>
-        </div>
-
         <Link to='/connections' className='flex items-center gap-x-8 gap-y-3 flex-wrap hover:opacity-80 transition-opacity'>
           <div className='flex items-baseline gap-1.5'>
             <span className='text-lg font-bold text-pink-500'>{followersCount}</span>
