@@ -1,6 +1,6 @@
-import { CheckCircle, MapPin, Calendar, PenBox, UserCheck, UserPlus, MessageCircle } from 'lucide-react'
+import { CheckCircle, MapPin, Calendar, PenBox, UserCheck, UserPlus, MessageCircle, MoreHorizontal, LogOut } from 'lucide-react'
 import moment from 'moment'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MdDelete } from "react-icons/md";
 import axios from 'axios';
@@ -11,6 +11,8 @@ const UserProfileInfo = ({ user, posts = [], profileId, setShowEdit, currentUser
   const [isFollowing, setIsFollowing] = useState(false)
   const [followersCount, setFollowersCount] = useState(user.followers?.length || 0)
   const [isMutualFollow, setIsMutualFollow] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
+  const menuRef = useRef(null)
 
   const normalizeUserId = (value) => String(typeof value === 'object' ? value?._id || value?.id || '' : value || '')
   const hasUserId = (list = [], targetId) => list.some((item) => normalizeUserId(item) === String(targetId))
@@ -69,6 +71,7 @@ const UserProfileInfo = ({ user, posts = [], profileId, setShowEdit, currentUser
         
         toast.success("Account deleted successfully");
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
         navigate('/login');
         window.location.reload();
       } catch (error) {
@@ -77,6 +80,22 @@ const UserProfileInfo = ({ user, posts = [], profileId, setShowEdit, currentUser
       }
     }
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setShowMenu(false);
+    navigate('/login');
+    window.location.reload();
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setShowMenu(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <div className='w-full'>
@@ -90,7 +109,7 @@ const UserProfileInfo = ({ user, posts = [], profileId, setShowEdit, currentUser
           <CheckCircle className='w-5 h-5 text-blue-500 shrink-0' />
         )}
         {!profileId && (
-          <div>
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setShowEdit(true)}
               className='p-1.5 hover:bg-slate-50 rounded-lg transition-colors group mt-0.5'
@@ -101,6 +120,26 @@ const UserProfileInfo = ({ user, posts = [], profileId, setShowEdit, currentUser
             <button onClick={handleDeleteAccount} className="cursor-pointer">
               <MdDelete className='text-[44px] pt-6 text-red-600'/>
             </button>
+
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setShowMenu((v) => !v)}
+                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors mt-0.5"
+                aria-label="Profile menu"
+              >
+                <MoreHorizontal className="w-5 h-5 text-gray-600" />
+              </button>
+              {showMenu && (
+                <div className="absolute right-0 top-full mt-2 w-36 bg-white border border-gray-100 rounded-lg shadow-lg z-50 py-1">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <LogOut size={16} /> Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
