@@ -34,7 +34,7 @@ const Storymodel = ({ setmodelopen }) => {
       setTimeout(() => {
         const success = true; // Simulate upload success
         if (success) {
-          console.log("Sharing:", { mode, text, media, backround });
+
           // alert("Story Shared!"); // Your requested alert
           resolve("Success");
           setmodelopen(false); // Close model after success

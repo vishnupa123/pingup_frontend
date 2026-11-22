@@ -32,6 +32,19 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
   };
 
   const resolvedUserId = currentUserId || getStoredUserId();
+
+  // Use the API's like flag first. Only fall back to the likes array/local
+  // storage when the API didn't send one, so other people's posts don't show
+  // as "liked" just because of a stale localStorage entry.
+  const isLikedByMe = (post, myId) => {
+    if (typeof post?.isLiked === 'boolean') return post.isLiked;
+    if (typeof post?.likedByMe === 'boolean') return post.likedByMe;
+    if (myId && Array.isArray(post?.likes)) {
+      return post.likes.some((id) => String(id) === String(myId));
+    }
+    return Boolean(getPersistedLikedPosts()[post?._id]);
+  };
+
   const initialLikesCount = typeof feed.likeCount === 'number'
     ? feed.likeCount
     : Array.isArray(feed.likes)
@@ -40,14 +53,13 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
 
   // Local state to handle the like UI without reloading
   const [likesCount, setLikesCount] = useState(initialLikesCount);
-  const [isLiked, setIsLiked] = useState(() => {
-    const persistedLikedPosts = getPersistedLikedPosts();
-    return Boolean(feed?.likedByMe || persistedLikedPosts[feed?._id] || (resolvedUserId && Array.isArray(feed.likes) && feed.likes.includes(resolvedUserId)));
-  });
+  const [isLiked, setIsLiked] = useState(() => isLikedByMe(feed, resolvedUserId));
 
   const [comments, setComments] = useState(initialComments);
+  const [showHeart, setShowHeart] = useState(false);
   const menuRef = useRef(null);
   const deleteTimerRef = useRef(null);
+  const heartTimerRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -62,6 +74,7 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
   useEffect(() => {
     return () => {
       if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
+      if (heartTimerRef.current) clearTimeout(heartTimerRef.current);
     };
   }, []);
 
@@ -77,11 +90,9 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
   }, [showcmt]);
 
   useEffect(() => {
-    const persistedLikedPosts = getPersistedLikedPosts();
-    const shouldBeLiked = Boolean(feed?.likedByMe || persistedLikedPosts[feed?._id] || (resolvedUserId && Array.isArray(feed.likes) && feed.likes.includes(resolvedUserId)));
-    setIsLiked(shouldBeLiked);
+    setIsLiked(isLikedByMe(feed, resolvedUserId));
     setLikesCount(typeof feed.likeCount === 'number' ? feed.likeCount : Array.isArray(feed.likes) ? feed.likes.length : 0);
-  }, [feed?._id, feed?.likedByMe, feed?.likeCount, feed?.likes, resolvedUserId]);
+  }, [feed?._id, feed?.isLiked, feed?.likedByMe, feed?.likeCount, feed?.likes, resolvedUserId]);
 
   const handleDelete = async () => {
     setShowMenu(false);
@@ -108,14 +119,13 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
     }
   };
 
-  const addLike = async () => {
+  const updateLike = async (nextLiked) => {
     const token = localStorage.getItem('token');
 
     const prevCount = likesCount;
     const prevLiked = isLiked;
-    const nextLiked = !isLiked;
 
-    setLikesCount(nextLiked ? likesCount + 1 : likesCount - 1);
+    setLikesCount((count) => Math.max(0, count + (nextLiked ? 1 : -1)));
     setIsLiked(nextLiked);
 
     try {
@@ -133,9 +143,32 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
     }
   };
 
+  // Heart button keeps the existing toggle behaviour.
+  const addLike = () => updateLike(!isLiked);
+
+  // Double-click on the photo only likes (never unlikes) and shows a heart pop.
+  const handleDoubleClickLike = () => {
+    setShowHeart(true);
+    if (heartTimerRef.current) clearTimeout(heartTimerRef.current);
+    heartTimerRef.current = setTimeout(() => setShowHeart(false), 750);
+
+    if (!isLiked) updateLike(true);
+  };
+
   const userData = feed.user || feed.author || {};
   const profilePic = userData.profilePic || userData.profile_picture || 'https://ui-avatars.com/api/?name=User';
   const fullName = userData.fullName || userData.full_name || 'User';
+
+  // Only the post owner can see Edit/Delete.
+  const getPostOwnerId = () => {
+    const owner = feed?.user || feed?.author || feed?.postedBy || feed?.userId;
+    if (owner && typeof owner === 'object') return owner._id || owner.id;
+    return owner;
+  };
+  const postOwnerId = getPostOwnerId();
+  const isOwner = Boolean(
+    resolvedUserId && postOwnerId && String(resolvedUserId) === String(postOwnerId)
+  );
 
   const imageMedia = [
     ...(Array.isArray(feed.images) ? feed.images : []),
@@ -155,7 +188,7 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
       )}
 
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3 " onDoubleClick={()=>alert("hi")}>
+        <div className="flex items-center gap-3 ">
           <img
             src={profilePic}
             className="w-10 h-10 rounded-full object-cover border border-gray-100"
@@ -168,21 +201,23 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
           </div>
         </div>
 
-        <div className="relative" ref={menuRef}>
-          <button onClick={() => setShowMenu(!showMenu)} className="text-gray-500 hover:text-gray-700 cursor-pointer">
-            <MoreHorizontal size={20} />
-          </button>
-          {showMenu && (
-            <div className="absolute right-0 top-full mt-2 w-32 bg-white border border-gray-100 rounded-xl shadow-lg z-50 py-1">
-              <button className="w-full flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                <Edit2 size={16} /> Edit
-              </button>
-              <button onClick={handleDelete} className="w-full flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-gray-50">
-                <Trash2 size={16} /> Delete
-              </button>
-            </div>
-          )}
-        </div>
+        {isOwner && (
+          <div className="relative" ref={menuRef}>
+            <button onClick={() => setShowMenu(!showMenu)} className="text-gray-500 hover:text-gray-700 cursor-pointer">
+              <MoreHorizontal size={20} />
+            </button>
+            {showMenu && (
+              <div className="absolute right-0 top-full mt-2 w-32 bg-white border border-gray-100 rounded-xl shadow-lg z-50 py-1">
+                <button className="w-full flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                  <Edit2 size={16} /> Edit
+                </button>
+                <button onClick={handleDelete} className="w-full flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-gray-50">
+                  <Trash2 size={16} /> Delete
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="my-6 text-gray-800 text-sm whitespace-pre-wrap">{feed.content}</div>
@@ -196,10 +231,21 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
       )}
 
       {imageMedia.length > 0 && (
-        <div className={`grid gap-2 mb-4 ${imageMedia.length === 1 ? 'grid-cols-1' : imageMedia.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
-          {imageMedia.map((src, index) => (
-            <img key={index} src={src} alt={`Post media ${index + 1}`} className="w-full object-cover max-h-[400px] min-h-[300px] rounded-md" onError={(e) => { e.target.src = 'https://via.placeholder.com/600x400?text=Image+not+available'; }} />
-          ))}
+        <div className="relative mb-4">
+          <div
+            onDoubleClick={handleDoubleClickLike}
+            className={`grid gap-2 select-none ${imageMedia.length === 1 ? 'grid-cols-1' : imageMedia.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}
+          >
+            {imageMedia.map((src, index) => (
+              <img key={index} src={src} alt={`Post media ${index + 1}`} className="w-full object-cover max-h-[400px] min-h-[300px] rounded-md" onError={(e) => { e.target.src = 'https://via.placeholder.com/600x400?text=Image+not+available'; }} />
+            ))}
+          </div>
+
+          {showHeart && (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <Heart className="animate-heart-pop text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)]" size={90} fill="currentColor" strokeWidth={1} />
+            </div>
+          )}
         </div>
       )}
 

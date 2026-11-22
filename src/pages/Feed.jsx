@@ -16,7 +16,6 @@ const Feed = () => {
   // Fetch feed posts from backend
   const fetchFeed = async () => {
     const token = localStorage.getItem('token'); 
-    console.log('🔍 Fetching feed with token:', token ? 'EXISTS' : 'MISSING');
     
     setIsLoading(true);
 
@@ -27,8 +26,6 @@ const Feed = () => {
         }
       });
 
-      console.log('✅ Feed fetched successfully:', response.data);
-
       let posts = response.data;
       if (!Array.isArray(posts)) {
         if (posts && Array.isArray(posts.posts)) posts = posts.posts;
@@ -37,7 +34,6 @@ const Feed = () => {
         else posts = Array.isArray(response.data) ? response.data : [];
       }
 
-      console.log('📝 Posts extracted:', posts);
       setFeed(posts || []);
     } catch (error) {
       console.error("❌ Error fetching feed:", {

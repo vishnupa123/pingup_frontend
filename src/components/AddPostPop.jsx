@@ -29,9 +29,7 @@ const AddPostPop = ({ onClose, postContent, postImages, setContent, setImages })
     // Safety Guard Check: Ensure there is at least a Caption text OR an Image attached
     if (!caption.trim() && selectedImages.length === 0) return
 
-    console.log("Post Submitted Successfully! 🎉")
-    console.log("Final Caption Content Text:", caption)
-    console.log("Final Attached Media Payload Data:", selectedImages)
+
 
     // Clear tracking variables globally across contexts
     setCaption("")

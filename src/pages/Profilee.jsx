@@ -49,9 +49,20 @@ const Profilee = () => {
     fetchProfileData();
   }, [profileId]);
 
-  const textOnlyPosts = Array.isArray(post) ? post.filter(item => !item.image || item.image.trim() === "") : [];
-  const mediaPosts = Array.isArray(post) ? post.filter(item => item.image && item.image.trim() !== "") : [];
-  const likedPosts = Array.isArray(post) ? post.filter(item => item.likedByMe === true) : [];
+  // Newest upload first (the "last" post you added appears at the top).
+  const byNewest = (a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0);
+  const allPosts = Array.isArray(post) ? [...post].sort(byNewest) : [];
+
+  const hasMedia = (item) => {
+    const images = Array.isArray(item?.images) ? item.images : [];
+    const image = item?.image || (item?.mediaType === 'image' ? item?.media_url : null);
+    const video = item?.video || (item?.mediaType === 'video' ? item?.media_url : null);
+    return images.length > 0 || Boolean(image || video);
+  };
+
+  // "Posts" shows everything the user uploaded; "Media" is the subset with photos/videos.
+  const mediaPosts = allPosts.filter(hasMedia);
+  const likedPosts = allPosts.filter(item => item.likedByMe === true);
 
   if (loading) return <div className='flex justify-center items-center min-h-[50vh]'><Loading /></div>;
 
@@ -135,7 +146,7 @@ const Profilee = () => {
 
             {/* Tab Content */}
             <div>
-              {activeTab === 'posts' && <MyProfile posts={textOnlyPosts} />}
+              {activeTab === 'posts' && <MyProfile posts={allPosts} />}
               {activeTab === 'media' && <MyProfile posts={mediaPosts} />}
               {activeTab === 'likes' && <MyProfile posts={likedPosts} />}
             </div>
