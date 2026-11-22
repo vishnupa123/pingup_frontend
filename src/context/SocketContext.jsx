@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { io } from 'socket.io-client'
-import { API_URL, getToken } from '../lib/api'
+import { API_URL, getToken, getCurrentUser } from '../lib/api'
 
 const SocketContext = createContext(null)
 
@@ -20,7 +20,11 @@ export const SocketProvider = ({ children }) => {
       autoConnect: false,
     })
 
-    const handleConnect = () => setConnected(true)
+    const handleConnect = () => {
+      setConnected(true)
+      const me = getCurrentUser()
+      if (me?.id) instance.emit('join', me.id)
+    }
     const handleDisconnect = () => setConnected(false)
     const handleError = (error) => console.error('Socket connection error:', error.message)
 
