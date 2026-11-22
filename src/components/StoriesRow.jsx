@@ -76,7 +76,7 @@ const StoriesRow = () => {
 
       {active && (
         <div className="fixed inset-0 z-[120] bg-black/85 flex items-center justify-center p-4" onClick={() => setActive(null)}>
-          <div className="relative w-full max-w-md h-[75vh] bg-black rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full max-w-sm max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
               {String(active.author?._id || active.author) === String(me?.id) && (
                 <button
