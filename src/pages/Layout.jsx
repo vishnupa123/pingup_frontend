@@ -1,7 +1,7 @@
 import React from 'react'
 import SideBar from '../components/SideBar'
+import BottomNav from '../components/BottomNav'
 import { Outlet } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
 import Loading from '../components/Loading'
 
 const Layout = () => {
@@ -13,26 +13,16 @@ const Layout = () => {
       {user ? (
         <div className="flex h-screen w-full bg-white overflow-hidden relative">
           
-          {/* 1. LEFT SIDEBAR */}
+          {/* 1. LEFT SIDEBAR (desktop) */}
           <SideBar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-          {/* 2. MAIN CONTENT AREA (Middle Feed Workspace) */}
-          {/* 🛠️ FIXED: Ensured full width allocation to close empty gaps next to the sidebar */}
-          <div className="flex-1 w-full bg-slate-50 overflow-y-auto no-scrollbar relative">
+          {/* 2. MAIN CONTENT AREA */}
+          <div className="flex-1 w-full bg-slate-50 overflow-y-auto no-scrollbar relative pb-20 sm:pb-0">
             <Outlet />
           </div>
 
-          {/* MOBILE MENU TOGGLE BUTTON */}
-          <button 
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="absolute top-4 right-4 z-50 p-2 bg-white rounded-xl shadow-md border border-pink-50 sm:hidden transition-transform active:scale-90 cursor-pointer"
-          >
-            {sidebarOpen ? (
-              <X className="w-5 h-5 text-pink-500" />
-            ) : (
-              <Menu className="w-5 h-5 text-pink-500" />
-            )}
-          </button>
+          {/* MOBILE BOTTOM NAV */}
+          <BottomNav />
 
         </div>
       ) : (
