@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import axios from 'axios'
 import { Route, BrowserRouter as Router, Routes, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Feed from './pages/Feed'
@@ -27,6 +28,23 @@ const App = () => {
       setIsCheckingAuth(false);
     }
   }, [clerkLoaded]);
+
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error?.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+    return () => axios.interceptors.response.eject(interceptor);
+  }, []);
 
   // Determine if user is authenticated
   const isAuthenticated = !!token || !!user;
