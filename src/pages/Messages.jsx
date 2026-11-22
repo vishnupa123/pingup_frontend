@@ -1,11 +1,36 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FaHouseUser } from 'react-icons/fa'
+import axios from 'axios'
 import { useNotifications } from '../context/NotificationContext'
+import { API_URL, authHeaders, getCurrentUser } from '../lib/api'
 
 const Messages = () => {
   const navigate = useNavigate()
   const { users, counts, totalUnread, markSeen, loading } = useNotifications()
+  const [friends, setFriends] = useState([])
+  const me = getCurrentUser()
+
+  useEffect(() => {
+    const loadFriends = async () => {
+      if (!me?.id) return
+      try {
+        const { data } = await axios.get(`${API_URL}/api/users`, { headers: authHeaders() })
+        const all = Array.isArray(data) ? data : []
+        const meData = all.find((u) => String(u._id) === String(me.id))
+        const following = new Set((meData?.following || []).map((id) => String(id?._id || id)))
+        const followers = new Set((meData?.followers || []).map((id) => String(id?._id || id)))
+        const mutual = all.filter((u) => {
+          const id = String(u._id)
+          return id !== String(me.id) && following.has(id) && followers.has(id)
+        })
+        setFriends(mutual)
+      } catch {
+        setFriends([])
+      }
+    }
+    loadFriends()
+  }, [me?.id])
 
   const openChat = (id) => {
     markSeen(id) // clears this conversation's notification
@@ -77,9 +102,36 @@ const Messages = () => {
               )
             })
           ) : (
-            <p className='text-center text-gray-400 py-8 text-sm'>
-              No conversations yet. Follow each other to start chatting.
-            </p>
+            <div className='py-4'>
+              {friends.length > 0 && (
+                <div className='mb-4'>
+                  <p className='text-sm font-medium text-gray-700 mb-3'>Friends</p>
+                  <div className='flex gap-4 overflow-x-auto no-scrollbar pb-2'>
+                    {friends.map((friend) => {
+                      const id = friend._id || friend.id
+                      return (
+                        <button
+                          key={id}
+                          type='button'
+                          onClick={() => navigate(`/profile/${id}`)}
+                          className='flex flex-col items-center gap-2 shrink-0 cursor-pointer'
+                        >
+                          <img
+                            src={friend.profilePic || friend.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.fullName || friend.username || 'User')}`}
+                            alt={friend.fullName || friend.username}
+                            className='w-14 h-14 rounded-full object-cover border border-gray-200'
+                          />
+                          <span className='text-[11px] text-gray-600 w-16 truncate text-center'>{friend.username || friend.fullName || 'User'}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+              <p className='text-center text-gray-400 py-4 text-sm'>
+                No conversations yet. Follow each other to start chatting.
+              </p>
+            </div>
           )}
         </div>
       </div>
