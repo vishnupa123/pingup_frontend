@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Image, X, Smile, MapPin } from 'lucide-react';
 import Pops from '../components/Pops';
 import Loading from '../components/Loading';
+import { API_URL } from '../lib/api';
 
 const CreatePost = () => {
   const [content, setContent] = useState("");
@@ -91,10 +92,10 @@ const CreatePost = () => {
       }
 
       if (useFormData) {
-        await axios.post('http://localhost:8000/api/posts/create-post', payload, config);
+        await axios.post(`${API_URL}/api/posts/create-post`, payload, config);
       } else {
         config.headers['Content-Type'] = 'application/json';
-        await axios.post('http://localhost:8000/api/posts/create-post', payload, config);
+        await axios.post(`${API_URL}/api/posts/create-post`, payload, config);
       }
 
       // Success Logic: Reset and show popup

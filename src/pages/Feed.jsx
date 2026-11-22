@@ -5,13 +5,11 @@ import Loading from '../components/Loading';
 import Storiesbar from '../components/Storiesbar';
 import Postscard from '../components/Postscard';
 import RecentMsg from '../components/RecentMsg';
+import { API_URL } from '../lib/api';
 
 const Feed = () => {
   const [feed, setFeed] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Correct URL definition
-  const POST_API_URL = 'http://localhost:8000/api/posts/';
 
   // Fetch feed posts from backend
   const fetchFeed = async () => {
@@ -20,7 +18,7 @@ const Feed = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.get('http://localhost:8000/api/posts/', {
+      const response = await axios.get(`${API_URL}/api/posts/`, {
         headers: {
           'Authorization': token ? `Bearer ${token}` : undefined
         }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Send } from 'lucide-react';
 import axios from 'axios';
+import { API_URL } from '../lib/api';
 
 const CmtBx = ({ comments, setComments, postId }) => {
   const [text, setText] = useState('');
@@ -14,7 +15,7 @@ const CmtBx = ({ comments, setComments, postId }) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        `http://localhost:8000/api/posts/${postId}/comments`, 
+        `${API_URL}/api/posts/${postId}/comments`, 
         { text },
         { headers: { Authorization: `Bearer ${token}` } }
       );

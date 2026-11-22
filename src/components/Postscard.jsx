@@ -4,6 +4,7 @@ import axios from 'axios';
 import moment from 'moment';
 import DeletePop from './DeletePop';
 import CmtBx from './CmtBx';
+import { API_URL } from '../lib/api';
 
 const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDelete }) => {
   const [showMenu, setShowMenu] = useState(false);
@@ -98,7 +99,7 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
     setShowMenu(false);
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`http://localhost:8000/api/posts/${feed._id}`, {
+      await axios.delete(`${API_URL}/api/posts/${feed._id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setDeleteError(false);
@@ -129,7 +130,7 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
     setIsLiked(nextLiked);
 
     try {
-      await axios.post(`http://localhost:8000/api/posts/${feed._id}/like`, {}, {
+      await axios.post(`${API_URL}/api/posts/${feed._id}/like`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

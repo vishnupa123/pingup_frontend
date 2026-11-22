@@ -1,6 +1,6 @@
 // Shared backend configuration for the frontend.
-// VITE_API_URL comes from dummy/.env and defaults to the local Express server.
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+// VITE_API_URL comes from dummy/.env; falls back to the deployed backend.
+export const API_URL = import.meta.env.VITE_API_URL || 'https://pingup-backend-3.onrender.com'
 
 export const getToken = () => localStorage.getItem('token')
 

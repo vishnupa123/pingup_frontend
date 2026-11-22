@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { API_URL } from '../lib/api';
 
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
@@ -32,7 +33,7 @@ const Login = () => {
     setOtpLoading(true);
     setError('');
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/generate-otp', { email });
+      const response = await axios.post(`${API_URL}/api/auth/generate-otp`, { email });
       if (response.data.success || response.status === 200) {
         setOtpSent(true);
         setError('');
@@ -67,8 +68,8 @@ const Login = () => {
     setLoading(true); setError('');
     try {
       const endpoint = isSignup
-        ? 'http://localhost:8000/api/auth/signup'
-        : 'http://localhost:8000/api/auth/login';
+        ? `${API_URL}/api/auth/signup`
+        : `${API_URL}/api/auth/login`;
       let response;
       if (isSignup) {
         const formData = new FormData();

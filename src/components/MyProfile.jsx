@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { API_URL } from '../lib/api'
 
 const timeAgo = (iso) => {
   const diff = Math.floor((Date.now() - new Date(iso)) / 1000)
