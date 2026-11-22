@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../lib/api';
+import { assets } from '../assets/assets';
 
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
@@ -172,6 +173,8 @@ const Login = () => {
 
         {/* ── RIGHT PANEL ── */}
         <div className='bg-white w-full md:w-96 flex flex-col justify-center px-10 py-12'>
+
+          <img src={assets.logo} alt="PingUp" className="w-28 mb-6 md:hidden" />
 
           <h2 className='text-xl font-semibold mb-6 text-gray-900'>
             {isSignup ? ['Basic info', 'Verification & Security', 'Profile'][step - 1] : 'Log in'}
