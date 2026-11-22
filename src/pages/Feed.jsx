@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import axios from 'axios';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { assets } from '../assets/assets';
 import Loading from '../components/Loading';
 import Postscard from '../components/Postscard';
@@ -7,51 +8,84 @@ import RecentMsg from '../components/RecentMsg';
 import StoriesRow from '../components/StoriesRow';
 import { API_URL } from '../lib/api';
 
-const Feed = () => {
-  const [feed, setFeed] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+const PAGE_SIZE = 10;
 
-  // Fetch feed posts from backend
-  const fetchFeed = async () => {
-    const token = localStorage.getItem('token'); 
-    
-    setIsLoading(true);
+const fetchFeedPage = async ({ pageParam = 1 }) => {
+  const token = localStorage.getItem('token');
+  const { data } = await axios.get(`${API_URL}/api/posts/`, {
+    params: { page: pageParam, limit: PAGE_SIZE },
+    headers: { Authorization: token ? `Bearer ${token}` : undefined },
+  });
 
-    try {
-      const response = await axios.get(`${API_URL}/api/posts/`, {
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : undefined
-        }
-      });
-
-      let posts = response.data;
-      if (!Array.isArray(posts)) {
-        if (posts && Array.isArray(posts.posts)) posts = posts.posts;
-        else if (posts && Array.isArray(posts.data)) posts = posts.data;
-        else if (posts && Array.isArray(posts.results)) posts = posts.results;
-        else posts = Array.isArray(response.data) ? response.data : [];
-      }
-
-      setFeed(posts || []);
-    } catch (error) {
-      console.error("❌ Error fetching feed:", {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data
-      });
-      // Set empty feed to prevent infinite loading
-      setFeed([]);
-    } finally {
-      setIsLoading(false);
-    }
+  // Backward-compatible handling
+  if (Array.isArray(data)) {
+    return { posts: data, hasMore: false, nextPage: null };
+  }
+  return {
+    posts: Array.isArray(data?.posts) ? data.posts : [],
+    hasMore: Boolean(data?.hasMore),
+    nextPage: data?.nextPage ?? null,
   };
+};
+
+const Feed = () => {
+  const queryClient = useQueryClient();
+  const sentinelRef = useRef(null);
+
+  const {
+    data,
+    isLoading,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ['feed'],
+    queryFn: fetchFeedPage,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextPage : undefined),
+  });
+
+  const feed = data?.pages.flatMap((page) => page.posts) ?? [];
 
   useEffect(() => {
-    fetchFeed();
-    const onPostCreated = () => fetchFeed();
+    const onPostCreated = () => {
+      queryClient.invalidateQueries({ queryKey: ['feed'] });
+    };
     window.addEventListener('post-created', onPostCreated);
     return () => window.removeEventListener('post-created', onPostCreated);
-  }, []);
+  }, [queryClient]);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: '300px 0px' }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, feed.length]);
+
+  const handleDelete = (deletedId) => {
+    queryClient.setQueryData(['feed'], (old) => {
+      if (!old?.pages) return old;
+      return {
+        ...old,
+        pages: old.pages.map((page) => ({
+          ...page,
+          posts: page.posts.filter((item) => item._id !== deletedId),
+        })),
+      };
+    });
+  };
 
   if (isLoading) return <Loading />;
 
@@ -64,17 +98,26 @@ const Feed = () => {
         <div className="mt-2 mb-6">
           <StoriesRow />
         </div>
+
+        {isError && (
+          <div className="text-center text-sm text-red-500 py-6">Failed to load feed. Please try again.</div>
+        )}
+
         <div className="flex flex-col gap-8">
           {feed.map((post) => (
             <Postscard
               key={post._id}
               feed={post}
-              // We pass the existing comments from the API response into the card
               initialComments={post.comments || []}
-              fetchFeed={fetchFeed}
-              onDelete={(deletedId) => setFeed((prevFeed) => prevFeed.filter((item) => item._id !== deletedId))}
+              fetchFeed={() => refetch()}
+              onDelete={handleDelete}
             />
           ))}
+        </div>
+
+        <div ref={sentinelRef} className="h-10 flex items-center justify-center">
+          {isFetchingNextPage && <span className="text-sm text-gray-400">Loading more posts...</span>}
+          {!hasNextPage && feed.length > 0 && <span className="text-xs text-gray-400">No more posts</span>}
         </div>
       </div>
 
