@@ -76,7 +76,7 @@ const StoriesRow = () => {
 
       {active && (
         <div className="fixed inset-0 z-[120] bg-black/85 flex items-center justify-center p-4" onClick={() => setActive(null)}>
-          <div className="relative w-full max-w-sm max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full max-w-sm h-[85vh] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
               {String(active.author?._id || active.author) === String(me?.id) && (
                 <button
@@ -101,7 +101,7 @@ const StoriesRow = () => {
             <div className="w-full h-full flex items-center justify-center">
               {active.mediaType === 'text' ? (
                 <div className="w-full h-full flex items-center justify-center p-8" style={{ background: active.background || '#4F46E5' }}>
-                  <p className="text-white text-2xl font-bold text-center whitespace-pre-wrap break-words">{active.content}</p>
+                  <p className="text-white text-lg font-semibold text-center whitespace-pre-wrap break-words">{active.content}</p>
                 </div>
               ) : active.mediaType === 'video' ? (
                 <video src={active.mediaUrl} controls autoPlay className="w-full h-full object-contain" />
