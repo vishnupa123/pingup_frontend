@@ -28,7 +28,7 @@ const Login = () => {
   const handleGenerateOTP = async (e) => {
     e.preventDefault();
     if (!email) { setError('Please enter your email address.'); return; }
-    
+
     setOtpLoading(true);
     setError('');
     try {
@@ -102,15 +102,21 @@ const Login = () => {
 
   const inputClass = 'w-full p-3 mb-4 border border-blue-400 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 bg-white';
 
-  const btnBase = `relative w-full py-3 rounded-lg text-sm font-medium overflow-hidden border transition-colors duration-300
-    before:absolute before:inset-y-0 before:w-full before:transition-transform before:duration-500 before:ease-in-out before:z-0
-    [&>span]:relative [&>span]:z-10`;
+  // ── Buttons: the fill animates the button's own background-size,
+  //    so there is no sliding pseudo-element to leave artifacts behind.
+  const btnBase =
+    'w-full py-3 rounded-lg text-sm font-medium border cursor-pointer bg-white bg-no-repeat ' +
+    'bg-[length:0%_100%] hover:bg-[length:100%_100%] ' +
+    'transition-[background-size,color,border-color] duration-500 ease-in-out ' +
+    'disabled:opacity-60 disabled:cursor-not-allowed';
 
-  const btnPrimary = `${btnBase} bg-white text-blue-600 border-blue-500 cursor-pointer
-    before:bg-blue-600 before:left-0 before:-translate-x-full hover:before:translate-x-0 hover:text-white`;
+  const btnPrimary =
+    `${btnBase} text-blue-600 border-blue-500 hover:text-white bg-left ` +
+    'bg-[image:linear-gradient(#2563eb,#2563eb)]';
 
-  const btnBack = `${btnBase} bg-white text-gray-500 border-gray-300 cursor-pointer mb-3
-    before:bg-gray-500 before:right-0 before:translate-x-full hover:before:translate-x-0 hover:text-white`;
+  const btnBack =
+    `${btnBase} text-gray-500 border-gray-300 hover:text-white mb-3 bg-right ` +
+    'bg-[image:linear-gradient(#6b7280,#6b7280)]';
 
   const StepIndicator = () => (
     <div className='flex items-center gap-2 mb-6'>
@@ -181,7 +187,7 @@ const Login = () => {
               <input type='password' value={password} onChange={e => setPassword(e.target.value)}
                 placeholder='Password' className={inputClass} required />
               <button type='submit' disabled={loading} className={btnPrimary}>
-                <span>{loading ? 'Signing in...' : 'Sign in'}</span>
+                {loading ? 'Signing in...' : 'Sign in'}
               </button>
             </form>
           )}
@@ -195,7 +201,9 @@ const Login = () => {
                 placeholder='Username' className={inputClass} required />
               <input type='email' value={email} onChange={e => setEmail(e.target.value)}
                 placeholder='Email' className={inputClass} required />
-              <button type='submit' className={btnPrimary}><span>Next →</span></button>
+              <button type='submit' disabled={otpLoading} className={btnPrimary}>
+                {otpLoading ? 'Sending OTP...' : 'Next →'}
+              </button>
             </form>
           )}
 
@@ -213,8 +221,12 @@ const Login = () => {
                 placeholder='Create password' className={inputClass} required />
               <input type='password' value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
                 placeholder='Confirm password' className={inputClass} required />
-              <button type='button' onClick={() => { setStep(1); setError(''); setOtpSent(false); }} className={btnBack}><span>← Back</span></button>
-              <button type='submit' disabled={loading} className={btnPrimary}><span>{loading ? 'Verifying OTP...' : 'Next →'}</span></button>
+              <button type='button' onClick={() => { setStep(1); setError(''); setOtpSent(false); }} className={btnBack}>
+                ← Back
+              </button>
+              <button type='submit' disabled={loading} className={btnPrimary}>
+                {loading ? 'Verifying OTP...' : 'Next →'}
+              </button>
             </form>
           )}
 
@@ -241,9 +253,11 @@ const Login = () => {
                 <input id='profilePicInput' type='file' accept='image/*' className='hidden'
                   onChange={e => setProfilePic(e.target.files[0])} />
               </div>
-              <button type='button' onClick={() => { setStep(2); setError(''); }} className={btnBack}><span>← Back</span></button>
+              <button type='button' onClick={() => { setStep(2); setError(''); }} className={btnBack}>
+                ← Back
+              </button>
               <button type='submit' disabled={loading} className={btnPrimary}>
-                <span>{loading ? 'Creating account...' : 'Sign up'}</span>
+                {loading ? 'Creating account...' : 'Sign up'}
               </button>
             </form>
           )}
