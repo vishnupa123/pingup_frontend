@@ -1,7 +1,15 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { menuItemsData } from '../assets/assets'
+import { Home, MessageCircle, Search, UserIcon, CirclePlus } from 'lucide-react'
 import { useNotifications } from '../context/NotificationContext'
+
+const mobileNavItems = [
+  { to: '/', label: 'Feed', Icon: Home },
+  { to: '/messages', label: 'Messages', Icon: MessageCircle },
+  { to: '/create-post', label: 'Create', Icon: CirclePlus },
+  { to: '/discover', label: 'Discover', Icon: Search },
+  { to: '/profile', label: 'Profile', Icon: UserIcon },
+]
 
 const BottomNav = () => {
   const { totalUnread } = useNotifications()
@@ -9,7 +17,7 @@ const BottomNav = () => {
   return (
     <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-2 py-1.5 safe-area-pb">
       <div className="flex items-center justify-around">
-        {menuItemsData.map(({ to, label, Icon }) => (
+        {mobileNavItems.map(({ to, label, Icon }) => (
           <NavLink
             key={to}
             to={to}

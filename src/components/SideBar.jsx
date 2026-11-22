@@ -2,7 +2,7 @@ import React from 'react';
 import { assets, dummyConnectionsData } from '../assets/assets';
 import { useNavigate, NavLink } from 'react-router-dom';
 import MenuItems from './MenuItems';
-import { CirclePlus, LogOut } from 'lucide-react'; // Added LogOut icon
+import { CirclePlus, LogOut, Sparkles } from 'lucide-react';
 import { UserButton, useClerk } from '@clerk/clerk-react';
 
 import ai from '../assets/ai.png'
@@ -50,14 +50,18 @@ const SideBar = ({ sidebarOpen, setSidebarOpen }) => {
 
 
 
-        <div className="flex cursor-pointer mt-1" onClick={() => navigate('/ai-world')}>
-
-          <img src='https://thumbs.dreamstime.com/b/icons-sample-post-setting-401415398.jpg' alt="AI World" className='w-full rounded-lg mb-3 border border-gray-100 bg-slate-50/50'
-            style={{width:"12%", height:"auto", marginLeft:"10px"}} />
-
-          <span className='text-md ml-2.5 font-sm text-blue-800'>Ai-World</span>
-
-        </div>
+        <NavLink
+          to="/ai-world"
+          onClick={() => setSidebarOpen(false)}
+          className={({ isActive }) =>
+            `px-3.5 py-2.5 flex items-center gap-3 rounded-md font-medium transition-colors mb-2 ${
+              isActive ? 'bg-blue-100 text-pink-600' : 'text-pink-500 hover:bg-blue-100'
+            }`
+          }
+        >
+          <Sparkles className="w-5 h-5" />
+          <span>AI World</span>
+        </NavLink>
 
 
 
