@@ -39,13 +39,12 @@ const StoriesRow = () => {
     <div>
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-800">Stories</h3>
-        <span className="text-xs text-gray-400">Visible to followers</span>
       </div>
 
       <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
         <button
           onClick={() => (myStories.length > 0 ? setActive(myStories[0]) : setOpenCreator(true))}
-          className="flex flex-col items-center gap-2 shrink-0"
+          className="flex flex-col items-center gap-2 shrink-0 cursor-pointer"
         >
           <div className={`w-14 h-14 rounded-full border-2 ${myStories.length > 0 ? 'border-pink-500 bg-pink-50 text-pink-600' : 'border-dashed border-indigo-300 bg-indigo-50 text-indigo-600'} flex items-center justify-center hover:opacity-90 transition`}>
             <Plus size={22} />
@@ -56,7 +55,7 @@ const StoriesRow = () => {
         {stories.map((story) => {
           const author = story.author || {};
           return (
-            <button key={story._id} onClick={() => setActive(story)} className="flex flex-col items-center gap-2 shrink-0">
+            <button key={story._id} onClick={() => setActive(story)} className="flex flex-col items-center gap-2 shrink-0 cursor-pointer">
               <div className="w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-pink-500 to-indigo-500">
                 <div className="w-full h-full rounded-full bg-white p-[2px]">
                   <img
@@ -81,12 +80,12 @@ const StoriesRow = () => {
               {String(active.author?._id || active.author) === String(me?.id) && (
                 <button
                   onClick={() => { setActive(null); setOpenCreator(true); }}
-                  className="px-2.5 py-1 rounded-md bg-white/20 text-white text-xs hover:bg-white/30"
+                  className="px-2.5 py-1 rounded-md bg-white/20 text-white text-xs hover:bg-white/30 cursor-pointer"
                 >
                   Add
                 </button>
               )}
-              <button onClick={() => setActive(null)} className="text-white/80 hover:text-white">
+              <button onClick={() => setActive(null)} className="text-white/80 hover:text-white cursor-pointer">
                 <X size={22} />
               </button>
             </div>

@@ -67,13 +67,13 @@ const StoryCreatorModal = ({ onClose, onCreated }) => {
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
           <div className="flex items-center gap-2">
             {step !== 'choose' && (
-              <button onClick={() => { setStep('choose'); resetMedia(); }} className="p-1 rounded-md hover:bg-slate-100 text-slate-600">
+              <button onClick={() => { setStep('choose'); resetMedia(); }} className="p-1 rounded-md hover:bg-slate-100 text-slate-600 cursor-pointer">
                 <ArrowLeft size={16} />
               </button>
             )}
             <h2 className="text-sm font-semibold text-slate-800">Add Story</h2>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md hover:bg-slate-100 text-slate-500">
+          <button onClick={onClose} className="p-1 rounded-md hover:bg-slate-100 text-slate-500 cursor-pointer">
             <X size={16} />
           </button>
         </div>
@@ -83,14 +83,14 @@ const StoryCreatorModal = ({ onClose, onCreated }) => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setStep('text')}
-                className="flex flex-col items-center justify-center gap-2 border border-slate-200 rounded-lg py-5 hover:bg-slate-50 transition"
+                className="flex flex-col items-center justify-center gap-2 border border-slate-200 rounded-lg py-5 hover:bg-slate-50 transition cursor-pointer"
               >
                 <Type size={22} className="text-indigo-600" />
                 <span className="text-sm font-medium text-slate-700">Text</span>
               </button>
               <button
                 onClick={() => setStep('media')}
-                className="flex flex-col items-center justify-center gap-2 border border-slate-200 rounded-lg py-5 hover:bg-slate-50 transition"
+                className="flex flex-col items-center justify-center gap-2 border border-slate-200 rounded-lg py-5 hover:bg-slate-50 transition cursor-pointer"
               >
                 <ImagePlus size={22} className="text-pink-600" />
                 <span className="text-sm font-medium text-slate-700">Media</span>
@@ -122,7 +122,7 @@ const StoryCreatorModal = ({ onClose, onCreated }) => {
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="w-full py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-60 flex items-center justify-center gap-2"
+                className="w-full py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Send size={14} /> {loading ? 'Posting...' : 'Post'}
               </button>
@@ -146,7 +146,7 @@ const StoryCreatorModal = ({ onClose, onCreated }) => {
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="w-full py-2 rounded-lg bg-pink-600 text-white text-sm font-medium hover:bg-pink-700 disabled:opacity-60 flex items-center justify-center gap-2"
+                className="w-full py-2 rounded-lg bg-pink-600 text-white text-sm font-medium hover:bg-pink-700 disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Send size={14} /> {loading ? 'Posting...' : 'Post'}
               </button>
