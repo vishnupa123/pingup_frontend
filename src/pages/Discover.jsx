@@ -201,7 +201,7 @@ const Discover = () => {
                   <img
                     src={video.author?.profilePic || 'https://ui-avatars.com/api/?name=User'}
                     alt={getDisplayName(video)}
-                    className='h-8 w-8 rounded-full border-2 border-white object-cover shadow-md'
+                    className='h-7 w-7 rounded-full border-2 border-white object-cover shadow-md'
                     onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=User'; }}
                   />
                 </button>
