@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { assets } from '../assets/assets';
 import Loading from '../components/Loading';
 import Postscard from '../components/Postscard';
 import RecentMsg from '../components/RecentMsg';
@@ -98,9 +97,6 @@ const Feed = () => {
   return (
     <div className="max-w-[1400px] mx-auto sm:px-10 py-4 flex flex-col lg:flex-row gap-8 justify-between items-start">
       <div className="flex-1 w-full lg:max-w-[850px]">
-        <div className="px-4 pt-2 pb-1 sm:hidden flex justify-end">
-          <img src={assets.logo} alt="PingUp" className="w-28" />
-        </div>
         <div className="mt-2 mb-6">
           <StoriesRow />
         </div>
