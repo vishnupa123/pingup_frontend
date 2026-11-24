@@ -22,7 +22,8 @@ const mergeMessages = (list) => {
 const Chat = () => {
   const { userId } = useParams()
   const { socket, connected } = useSocket()
-  const me = useMe()
+  const contextMe = useMe()
+  const [me, setMe] = useState(contextMe)
   const { markSeen } = useNotifications()
 
   const [chatUser, setChatUser] = useState(null)
@@ -58,6 +59,34 @@ const Chat = () => {
     return () => { cancelled = true }
   }, [userId])
 
+  // Always read a fresh copy of the logged-in user. A newly followed friend
+  // makes both users connections immediately, but the cached context can be
+  // stale until the app reloads.
+  useEffect(() => {
+    if (!contextMe?.id) return undefined
+    let cancelled = false
+
+    const refreshMe = async () => {
+      try {
+        const { data } = await axios.get(`${API_URL}/api/users/me`, {
+          headers: authHeaders(),
+          withCredentials: true,
+        })
+        if (data?.user && !cancelled) {
+          const fresh = { ...data.user, id: data.user._id || data.user.id }
+          localStorage.setItem('user', JSON.stringify(fresh))
+          setMe(fresh)
+        }
+      } catch (error) {
+        console.error('Error refreshing current user:', error)
+        if (!cancelled) setMe(contextMe)
+      }
+    }
+
+    refreshMe()
+    return () => { cancelled = true }
+  }, [contextMe?.id])
+
   // Load existing conversation: GET /api/messages/:otherUserId
   useEffect(() => {
     if (!userId || !me?.id) return undefined
@@ -89,6 +118,18 @@ const Chat = () => {
   useEffect(() => {
     if (!socket || !me?.id || !userId || !canMessage) return undefined
 
+    const markIncomingSeen = async () => {
+      try {
+        await axios.post(
+          `${API_URL}/api/messages/seen/${userId}`,
+          {},
+          { headers: authHeaders(), withCredentials: true }
+        )
+      } catch (error) {
+        console.error('Error marking message seen:', error)
+      }
+    }
+
     const onReceive = (msg) => {
       const fromMe = String(msg?.sender) === String(me.id)
       const toMe = String(msg?.receiver) === String(me.id)
@@ -98,16 +139,46 @@ const Chat = () => {
       if (otherPerson !== String(userId)) return
 
       setMessages((prev) => mergeMessages([...prev, msg]))
+      if (!fromMe && toMe) markIncomingSeen()
+    }
+
+    const onSeen = (data) => {
+      if (String(data?.conversationWith) !== String(userId)) return
+
+      setMessages((prev) =>
+        prev.map((msg) => {
+          const mineToThem =
+            String(msg.sender) === String(me.id) && String(msg.receiver) === String(userId)
+          return mineToThem ? { ...msg, seenAt: data.seenAt, expiresAt: data.expiresAt } : msg
+        })
+      )
     }
 
     socket.on('receive_message', onReceive)
-    return () => socket.off('receive_message', onReceive)
+    socket.on('messages_seen', onSeen)
+    return () => {
+      socket.off('receive_message', onReceive)
+      socket.off('messages_seen', onSeen)
+    }
   }, [socket, me?.id, userId, canMessage])
 
   // Opening a conversation (or receiving a message while it is open) clears its badge.
   useEffect(() => {
     if (canMessage && userId && !loading) markSeen(userId)
   }, [canMessage, userId, loading, messages.length, markSeen])
+
+  // Remove messages locally once their 2-day post-seen expiry has passed.
+  useEffect(() => {
+    const removeExpired = () => {
+      const now = Date.now()
+      setMessages((prev) =>
+        prev.filter((msg) => !msg.expiresAt || new Date(msg.expiresAt).getTime() > now)
+      )
+    }
+
+    const timer = window.setInterval(removeExpired, 60000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -153,8 +224,7 @@ const Chat = () => {
 
   return (
     <div
-      className='flex flex-col w-full md:w-[70%] bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm relative'
-      style={{ height: '100dvh', maxHeight: '100dvh' }}
+      className='flex flex-col w-full md:w-[70%] bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm relative mt-3 sm:mt-0 h-[calc(100dvh-9.25rem)] max-h-[calc(100dvh-9.25rem)] sm:h-[100dvh] sm:max-h-[100dvh]'
     >
       {/* Header */}
       <div className='bg-white px-4 md:px-6 py-3 md:py-4 border-b border-gray-100 flex items-center gap-3 shrink-0'>
@@ -198,6 +268,9 @@ const Chat = () => {
                 <span className={`block text-[9px] mt-1 text-right px-1.5 ${isMe ? 'text-pink-100' : 'text-gray-400'}`}>
                   {time}
                 </span>
+                {isMe && msg.seenAt && (
+                  <span className='block text-[9px] text-right px-1.5 text-pink-100'>Seen</span>
+                )}
               </div>
             </div>
           )
