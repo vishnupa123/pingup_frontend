@@ -11,6 +11,26 @@
 
 @tailwind utilities;
 
+/* Slightly smaller paragraph text across all pages.
+   Kept in the base layer so explicit Tailwind text utilities still apply. */
+@layer base {
+  p {
+    font-size: 0.9375rem; /* 15px instead of 16px */
+  }
+}
+
+/* Nudge paragraphs that set their own Tailwind text size down one small step. */
+p[class*="text-2xl"] { font-size: 1.375rem; }
+p[class*="text-xl"] { font-size: 1.125rem; }
+p[class*="text-lg"] { font-size: 1rem; }
+p[class*="text-base"] { font-size: 0.9375rem; }
+p[class*="text-sm"] { font-size: 0.8125rem; }
+p[class*="text-xs"] { font-size: 0.6875rem; }
+p[class*="text-[11px]"] { font-size: 0.625rem; }
+p[class*="text-[12px]"] { font-size: 0.6875rem; }
+p[class*="text-[13px]"] { font-size: 0.75rem; }
+p[class*="text-[14px]"] { font-size: 0.8125rem; }
+
 /* APPLY THE CODE BELOW THESE LINES */
 @layer utilities {
   /* Hide scrollbar for Chrome, Safari and Opera */
