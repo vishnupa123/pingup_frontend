@@ -8,6 +8,15 @@ import CmtBx from './CmtBx';
 import { API_URL } from '../lib/api';
 import { downloadVideo } from '../lib/download';
 
+// Shared across all feed posts so starting one video pauses the previous one.
+const feedVideos = new Set();
+
+const pauseOtherFeedVideos = (currentVideo) => {
+  feedVideos.forEach((video) => {
+    if (video !== currentVideo && !video.paused) video.pause();
+  });
+};
+
 const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDelete }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
@@ -63,6 +72,12 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const videoRef = useRef(null);
   const menuRef = useRef(null);
+
+  const registerVideo = (element) => {
+    if (videoRef.current) feedVideos.delete(videoRef.current);
+    videoRef.current = element;
+    if (element) feedVideos.add(element);
+  };
   const deleteTimerRef = useRef(null);
   const heartTimerRef = useRef(null);
   const navigate = useNavigate();
@@ -81,6 +96,10 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
     return () => {
       if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
       if (heartTimerRef.current) clearTimeout(heartTimerRef.current);
+      if (videoRef.current) {
+        videoRef.current.pause();
+        feedVideos.delete(videoRef.current);
+      }
     };
   }, []);
 
@@ -188,6 +207,7 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
     if (!video) return;
 
     if (video.paused) {
+      pauseOtherFeedVideos(video);
       const promise = video.play();
       if (promise && typeof promise.catch === 'function') promise.catch(() => {});
     } else {
@@ -250,11 +270,14 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
       {videoMedia.length > 0 && (
         <div className="relative mb-4 rounded-xl overflow-hidden border border-gray-100 bg-black">
           <video
-            ref={videoRef}
+            ref={registerVideo}
             src={videoMedia[0]}
             playsInline
             preload="metadata"
-            onPlay={() => setIsVideoPlaying(true)}
+            onPlay={(event) => {
+              pauseOtherFeedVideos(event.currentTarget);
+              setIsVideoPlaying(true);
+            }}
             onPause={() => setIsVideoPlaying(false)}
             onEnded={() => setIsVideoPlaying(false)}
             className="w-full max-h-[500px] object-contain bg-black"
