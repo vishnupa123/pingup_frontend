@@ -2,11 +2,8 @@ import React from 'react';
 import { assets, dummyConnectionsData } from '../assets/assets';
 import { useNavigate, NavLink } from 'react-router-dom';
 import MenuItems from './MenuItems';
-import { CirclePlus, LogOut, Sparkles, Trash2 } from 'lucide-react';
+import { CirclePlus, LogOut, Sparkles } from 'lucide-react';
 import { UserButton, useClerk } from '@clerk/clerk-react';
-import axios from 'axios';
-import toast from 'react-hot-toast';
-import { API_URL, authHeaders } from '../lib/api';
 
 import ai from '../assets/ai.png'
 
@@ -29,19 +26,6 @@ const SideBar = ({ sidebarOpen, setSidebarOpen }) => {
     localStorage.removeItem('user');
     signOut();
     window.location.href = '/login';
-  };
-
-  const handleDeleteAccount = async () => {
-    if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) return;
-    try {
-      await axios.delete(`${API_URL}/api/users/delete`, { headers: authHeaders() });
-      toast.success('Account deleted successfully');
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to delete account');
-    }
   };
 
   return (
@@ -138,14 +122,6 @@ const SideBar = ({ sidebarOpen, setSidebarOpen }) => {
         >
           <LogOut className="w-5 h-5" />
           <span>Logout</span>
-        </button>
-
-        <button
-          onClick={handleDeleteAccount}
-          className="w-full mt-1 px-3.5 py-2.5 flex items-center gap-3 rounded-md font-medium text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
-        >
-          <Trash2 className="w-5 h-5" />
-          <span>Delete Account</span>
         </button>
 
 

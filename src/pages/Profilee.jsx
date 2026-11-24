@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useClerk } from '@clerk/clerk-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { API_URL, authHeaders } from '../lib/api';
@@ -12,6 +13,7 @@ import MyProfile from '../components/MyProfile';
 const Profilee = () => {
   const { profileId } = useParams();
   const navigate = useNavigate();
+  const { signOut } = useClerk();
   const [users, setUsers] = useState(null);
   const [post, setPost] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
@@ -19,6 +21,7 @@ const Profilee = () => {
   const [activeTab, setActiveTab] = useState('posts');
   const [showEdit, setShowEdit] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const menuRef = useRef(null);
 
   const fetchProfileData = async () => {
@@ -71,16 +74,33 @@ const Profilee = () => {
   };
 
   const handleDeleteAccount = async () => {
+    if (profileId || deleting) return;
     if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) return;
+
+    setDeleting(true);
+    setShowMenu(false);
+
     try {
       await axios.delete(`${API_URL}/api/users/delete`, { headers: authHeaders() });
       toast.success('Account deleted successfully');
+
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      navigate('/login');
+      localStorage.removeItem('likedPosts');
+      localStorage.removeItem('seenStoryIds');
+      localStorage.removeItem('pingup_message_seen');
+
+      try {
+        await signOut();
+      } catch (signOutError) {
+        console.error('Clerk sign out after delete failed:', signOutError);
+      }
+
+      navigate('/login', { replace: true });
       window.location.reload();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to delete account');
+      setDeleting(false);
     }
   };
 
@@ -127,10 +147,11 @@ const Profilee = () => {
                       <LogOut size={16} /> Logout
                     </button>
                     <button
-                      onClick={() => { setShowMenu(false); handleDeleteAccount(); }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-700 hover:bg-red-50"
+                      onClick={handleDeleteAccount}
+                      disabled={deleting}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <Trash2 size={16} /> Delete Account
+                      <Trash2 size={16} /> {deleting ? 'Deleting...' : 'Delete Account'}
                     </button>
                   </div>
                 )}
