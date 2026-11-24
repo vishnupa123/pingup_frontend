@@ -305,7 +305,7 @@ const Chat = () => {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder={`Message ${displayName}...`}
-            className='flex-1 bg-gray-50 border border-gray-100 text-base md:text-xs px-3 py-2.5 rounded-xl focus:outline-none focus:border-pink-300 transition-colors text-gray-700 placeholder-gray-400 min-w-0'
+            className='flex-1 bg-gray-50 border border-gray-100 text-sm md:text-xs px-3 py-2.5 rounded-xl focus:outline-none focus:border-pink-300 transition-colors text-gray-700 placeholder-gray-400 min-w-0'
           />
 
           <button
