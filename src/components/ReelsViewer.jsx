@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Heart, MessageCircle, Play, Volume2, VolumeX, X } from 'lucide-react';
+import { ChevronDown, Download, Heart, MessageCircle, Play, Volume2, VolumeX, X } from 'lucide-react';
 import axios from 'axios';
 import CmtBx from './CmtBx';
 import { API_URL, authHeaders, getCurrentUser } from '../lib/api';
+import { downloadVideo } from '../lib/download';
 
 const getLikedMap = () => {
   try {
@@ -341,6 +342,16 @@ const ReelsViewer = ({ videos, initialIndex, onClose, onUpdateVideo }) => {
                     <MessageCircle size={28} className='text-white' />
                   </button>
                   <span className='text-xs font-semibold text-white drop-shadow'>{comments.length}</span>
+
+                  <button
+                    type='button'
+                    onClick={() => downloadVideo(video.videoUrl, `pingup-reel-${video._id}.mp4`)}
+                    className='mt-4 flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/10 cursor-pointer'
+                    aria-label='Download video'
+                    title='Download video'
+                  >
+                    <Download size={26} className='text-white' />
+                  </button>
                 </div>
 
                 {/* Video info */}
