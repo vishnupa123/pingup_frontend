@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MoreHorizontal, Trash2, Edit2, Heart, MessageCircle } from 'lucide-react';
+import { MoreHorizontal, Trash2, Edit2, Heart, MessageCircle, Play, Download } from 'lucide-react';
 import axios from 'axios';
 import moment from 'moment';
 import DeletePop from './DeletePop';
 import CmtBx from './CmtBx';
 import { API_URL } from '../lib/api';
+import { downloadVideo } from '../lib/download';
 
 const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDelete }) => {
   const [showMenu, setShowMenu] = useState(false);
@@ -59,6 +60,8 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
 
   const [comments, setComments] = useState(initialComments);
   const [showHeart, setShowHeart] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const videoRef = useRef(null);
   const menuRef = useRef(null);
   const deleteTimerRef = useRef(null);
   const heartTimerRef = useRef(null);
@@ -180,6 +183,18 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
     else navigate(`/profile/${authorId}`);
   };
 
+  const toggleVideoPlayback = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      const promise = video.play();
+      if (promise && typeof promise.catch === 'function') promise.catch(() => {});
+    } else {
+      video.pause();
+    }
+  };
+
   const imageMedia = [
     ...(Array.isArray(feed.images) ? feed.images : []),
     feed.image,
@@ -233,10 +248,30 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
       <div className="my-6 text-gray-800 text-sm whitespace-pre-wrap">{feed.content}</div>
 
       {videoMedia.length > 0 && (
-        <div className="mb-4 rounded-xl overflow-hidden border border-gray-100 bg-black">
-          <video controls className="w-full max-h-[500px] object-contain bg-black">
-            <source src={videoMedia[0]} />
-          </video>
+        <div className="relative mb-4 rounded-xl overflow-hidden border border-gray-100 bg-black">
+          <video
+            ref={videoRef}
+            src={videoMedia[0]}
+            playsInline
+            preload="metadata"
+            onPlay={() => setIsVideoPlaying(true)}
+            onPause={() => setIsVideoPlaying(false)}
+            onEnded={() => setIsVideoPlaying(false)}
+            className="w-full max-h-[500px] object-contain bg-black"
+          />
+
+          <button
+            type="button"
+            onClick={toggleVideoPlayback}
+            className="absolute inset-0 z-10 flex cursor-pointer items-center justify-center select-none"
+            aria-label={isVideoPlaying ? 'Pause video' : 'Play video'}
+          >
+            {!isVideoPlaying && (
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-black/50 text-white shadow-lg backdrop-blur-sm">
+                <Play size={26} className="ml-0.5 fill-white" />
+              </span>
+            )}
+          </button>
         </div>
       )}
 
@@ -269,6 +304,18 @@ const Postscard = ({ feed, fetchFeed, initialComments = [], currentUserId, onDel
         <button onClick={() => setShowcmt(true)} className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors">
           <MessageCircle size={20} /> {comments.length}
         </button>
+
+        {videoMedia.length > 0 && (
+          <button
+            type="button"
+            onClick={() => downloadVideo(videoMedia[0], `pingup-video-${feed._id}.mp4`)}
+            className="flex items-center gap-2 text-gray-600 transition-colors hover:text-blue-500 cursor-pointer"
+            aria-label="Download video"
+            title="Download video"
+          >
+            <Download size={20} />
+          </button>
+        )}
 
         {showcmt && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
