@@ -92,7 +92,7 @@ const Discover = () => {
 
   return (
     <div className='max-w-6xl w-full p-6'>
-      <h1 className='text-2xl font-semibold theme-gradient-text mb-6'>Discover</h1>
+      <h1 className='text-2xl font-semibold text-blue-600 mb-6'>Discover</h1>
 
       <div className='relative mb-6 max-w-md'>
         <Search className='absolute left-3 top-2 text-gray-400' size={16} />

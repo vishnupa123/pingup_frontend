@@ -125,7 +125,7 @@ const CreatePost = () => {
       {showSuccess && <Pops onClose={() => setShowSuccess(false)} />}
 
       <div className='mb-6'>
-        <h1 className='text-2xl font-semibold theme-gradient-text tracking-tight'>Create Post</h1>
+        <h1 className='text-2xl font-semibold text-blue-500 tracking-tight'>Create Post</h1>
         <p className='text-xs text-gray-400 mt-0.5'>Share your new ideas or media with your community</p>
       </div>
 

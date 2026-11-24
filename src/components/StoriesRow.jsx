@@ -75,11 +75,7 @@ const StoriesRow = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-800">Stories</h3>
-      </div>
-
-      <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
+      <div className="flex gap-3 overflow-x-auto no-scrollbar pb-0.5">
         <button
           onClick={() => (myStories.length > 0 ? openViewer(myStories, 0) : setOpenCreator(true))}
           className="flex flex-col items-center gap-2 shrink-0 cursor-pointer"

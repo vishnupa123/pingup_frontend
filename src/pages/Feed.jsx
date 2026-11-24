@@ -97,7 +97,7 @@ const Feed = () => {
   return (
     <div className="max-w-[1400px] mx-auto sm:px-10 pt-1 pb-4 sm:py-4 flex flex-col lg:flex-row gap-8 justify-between items-start">
       <div className="flex-1 w-full lg:max-w-[850px]">
-        <div className="mb-4 sm:mt-2 sm:mb-6">
+        <div className="mb-2 sm:mt-1 sm:mb-3">
           <StoriesRow />
         </div>
 
@@ -105,7 +105,7 @@ const Feed = () => {
           <div className="text-center text-sm text-red-500 py-6">Failed to load feed. Please try again.</div>
         )}
 
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-4">
           {feed.map((post) => (
             <Postscard
               key={post._id}
