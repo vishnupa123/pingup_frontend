@@ -60,7 +60,7 @@ const Reels = () => {
     <ReelsViewer
       videos={videos}
       initialIndex={0}
-      onClose={() => navigate('/discover')}
+      onClose={() => navigate('/')}
       onUpdateVideo={updateVideo}
     />
   )

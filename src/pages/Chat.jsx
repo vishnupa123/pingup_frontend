@@ -224,7 +224,7 @@ const Chat = () => {
 
   return (
     <div
-      className='flex flex-col w-full md:w-[70%] bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm relative mt-3 sm:mt-0 h-[calc(100dvh-9.25rem)] max-h-[calc(100dvh-9.25rem)] sm:h-[100dvh] sm:max-h-[100dvh]'
+      className='flex flex-col w-full md:w-[70%] bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm relative h-[calc(100dvh-8.25rem)] max-h-[calc(100dvh-8.25rem)] sm:h-[100dvh] sm:max-h-[100dvh]'
     >
       {/* Header */}
       <div className='bg-white px-4 md:px-6 py-3 md:py-4 border-b border-gray-100 flex items-center gap-3 shrink-0'>

@@ -46,11 +46,11 @@ const Messages = () => {
   }
 
   return (
-    <div className='min bg-slate-100'>
+    <div className='min bg-slate-100 p-6'>
       <div className='max-w-5xl w-full bg-white rounded-xl shadow-sm'>
         <div className='mb-6'>
           <h1 className='text-2xl font-semibold text-blue-600'>Messages</h1>
-          <p className='text-sm text-gray-500'>Talk to Your Friends and Family</p>
+          <p className='text-xs text-gray-500'>Talk to Your Friends and Family</p>
           {totalUnread > 0 && (
             <p className='mt-1 text-xs text-pink-500'>{totalUnread} unread {totalUnread === 1 ? 'message' : 'messages'}</p>
           )}
