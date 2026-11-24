@@ -2,19 +2,46 @@ import React from 'react'
 import SideBar from '../components/SideBar'
 import BottomNav from '../components/BottomNav'
 import { Outlet, useNavigate } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
 import Loading from '../components/Loading'
 import { assets } from '../assets/assets'
 
 const Layout = () => {
   const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
+  const touchStartRef = React.useRef({ x: 0, y: 0 })
   const navigate = useNavigate()
+
+  // Swipe from the left edge to open the sidebar; swipe left to close it.
+  const handleTouchStart = (event) => {
+    const touch = event.touches?.[0]
+    if (!touch) return
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY }
+  }
+
+  const handleTouchEnd = (event) => {
+    const touch = event.changedTouches?.[0]
+    if (!touch) return
+
+    const deltaX = touch.clientX - touchStartRef.current.x
+    const deltaY = touch.clientY - touchStartRef.current.y
+
+    if (Math.abs(deltaX) < 60 || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return
+
+    if (!sidebarOpen && touchStartRef.current.x <= 28 && deltaX > 0) {
+      setSidebarOpen(true)
+    } else if (sidebarOpen && deltaX < 0) {
+      setSidebarOpen(false)
+    }
+  }
 
   return (
     <div className="w-full min-h-screen bg-slate-50">
       {user ? (
-        <div className="flex h-screen w-full bg-white overflow-hidden relative">
+        <div
+          className="flex h-screen w-full bg-white overflow-hidden relative"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
 
           {/* 1. LEFT SIDEBAR (desktop / slide-in mobile) */}
           <SideBar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
@@ -27,14 +54,7 @@ const Layout = () => {
           )}
 
           {/* 2. MOBILE HEADER — icons stay fixed while content scrolls */}
-          <header className="sm:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-white/95 backdrop-blur border-b border-gray-100 flex items-center justify-between px-4">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 -ml-2 rounded-xl hover:bg-gray-50 cursor-pointer"
-              aria-label="Toggle menu"
-            >
-              {sidebarOpen ? <X className="w-5 h-5 text-gray-700" /> : <Menu className="w-5 h-5 text-gray-700" />}
-            </button>
+          <header className="sm:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-white/95 backdrop-blur border-b border-gray-100 flex items-center justify-center px-4">
             <img
               src={assets.logo}
               alt="PingUp"
