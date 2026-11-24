@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Search, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import UserCard from '../components/UserCard';
 import axios from 'axios';
 import { API_URL } from '../lib/api';
@@ -14,7 +15,11 @@ const getVideoUrl = (post) =>
 const getDisplayName = (post) =>
   post?.author?.fullName || post?.author?.username || 'PingUp user';
 
+const getAuthorId = (post) =>
+  typeof post?.author === 'object' ? post?.author?._id : post?.author;
+
 const Discover = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [videos, setVideos] = useState([]);
@@ -161,28 +166,46 @@ const Discover = () => {
         ) : videos.length > 0 ? (
           <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'>
             {videos.map((video) => (
-              <button
-                type='button'
+              <div
                 key={video._id}
-                onClick={() => setActiveVideo(video)}
-                className='group relative aspect-[9/8] overflow-hidden rounded-xl border border-gray-200 bg-black shadow-sm hover:shadow-lg transition-shadow cursor-pointer'
-                aria-label={`Play video by ${getDisplayName(video)}`}
+                className='group relative aspect-[9/8] overflow-hidden rounded-xl border border-gray-200 bg-black shadow-sm hover:shadow-lg transition-shadow'
               >
-                <video
-                  src={`${video.videoUrl}#t=0.1`}
-                  muted
-                  preload='metadata'
-                  playsInline
-                  className='pointer-events-none h-full w-full object-cover'
-                />
-                <div className='absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/20' />
-                <div className='absolute bottom-2 left-2 right-2 text-left'>
-                  <p className='truncate text-xs font-semibold text-white'>@{getDisplayName(video)}</p>
-                  {video.content && (
-                    <p className='truncate text-[10px] text-white/80'>{video.content}</p>
-                  )}
-                </div>
-              </button>
+                <button
+                  type='button'
+                  onClick={() => setActiveVideo(video)}
+                  className='absolute inset-0 z-0 cursor-pointer'
+                  aria-label={`Play video by ${getDisplayName(video)}`}
+                >
+                  <video
+                    src={`${video.videoUrl}#t=0.1`}
+                    muted
+                    preload='metadata'
+                    playsInline
+                    className='pointer-events-none h-full w-full object-cover'
+                  />
+                </button>
+
+                <div className='pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-transparent to-transparent' />
+
+                <button
+                  type='button'
+                  onClick={() => {
+                    const authorId = getAuthorId(video);
+                    if (!authorId) return;
+                    if (currentUser && String(authorId) === String(currentUser._id)) navigate('/profile');
+                    else navigate(`/profile/${authorId}`);
+                  }}
+                  className='absolute bottom-2 left-2 z-20 cursor-pointer'
+                  aria-label={`Open ${getDisplayName(video)} profile`}
+                >
+                  <img
+                    src={video.author?.profilePic || 'https://ui-avatars.com/api/?name=User'}
+                    alt={getDisplayName(video)}
+                    className='h-8 w-8 rounded-full border-2 border-white object-cover shadow-md'
+                    onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=User'; }}
+                  />
+                </button>
+              </div>
             ))}
           </div>
         ) : (
