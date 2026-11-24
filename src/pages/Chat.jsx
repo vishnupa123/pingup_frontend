@@ -19,6 +19,19 @@ const mergeMessages = (list) => {
   )
 }
 
+// Older backend deployments do not have the explicit seen endpoint yet.
+// Falling back to the conversation GET keeps the chat working until Render
+// picks up the latest backend commit.
+const markConversationSeenOnServer = async (otherUserId) => {
+  const config = { headers: authHeaders(), withCredentials: true }
+  try {
+    await axios.post(`${API_URL}/api/messages/seen/${otherUserId}`, {}, config)
+  } catch (error) {
+    if (error?.response?.status !== 404) throw error
+    await axios.get(`${API_URL}/api/messages/${otherUserId}`, config)
+  }
+}
+
 const Chat = () => {
   const { userId } = useParams()
   const { socket, connected } = useSocket()
@@ -120,11 +133,7 @@ const Chat = () => {
 
     const markIncomingSeen = async () => {
       try {
-        await axios.post(
-          `${API_URL}/api/messages/seen/${userId}`,
-          {},
-          { headers: authHeaders(), withCredentials: true }
-        )
+        await markConversationSeenOnServer(userId)
       } catch (error) {
         console.error('Error marking message seen:', error)
       }
@@ -167,13 +176,9 @@ const Chat = () => {
     if (!canMessage || !userId || loading) return
 
     markSeen(userId)
-    axios
-      .post(
-        `${API_URL}/api/messages/seen/${userId}`,
-        {},
-        { headers: authHeaders(), withCredentials: true }
-      )
-      .catch((error) => console.error('Error marking conversation seen:', error))
+    markConversationSeenOnServer(userId).catch((error) =>
+      console.error('Error marking conversation seen:', error)
+    )
   }, [canMessage, userId, loading, messages.length, markSeen])
 
   // Remove messages locally once their 2-day post-seen expiry has passed.

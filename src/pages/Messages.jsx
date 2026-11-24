@@ -103,16 +103,17 @@ const Messages = () => {
             <div className='py-4'>
               {friends.length > 0 ? (
                 <div className='mb-4'>
-                  <p className='text-sm font-medium text-gray-700 mb-3'>Friends</p>
-                  <div className='flex gap-4 overflow-x-auto no-scrollbar pb-2'>
+                  <p className='text-sm font-medium text-gray-700 mb-3'>Your Friends</p>
+                  <div className='flex flex-wrap gap-4 pb-2'>
                     {friends.map((friend) => {
                       const id = friend._id || friend.id
                       return (
                         <button
                           key={id}
                           type='button'
-                          onClick={() => navigate(`/profile/${id}`)}
-                          className='flex flex-col items-center gap-2 shrink-0 cursor-pointer'
+                          onClick={() => openChat(id)}
+                          className='flex flex-col items-center gap-2 cursor-pointer'
+                          aria-label={`Chat with ${friend.fullName || friend.username}`}
                         >
                           <img
                             src={friend.profilePic || friend.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.fullName || friend.username || 'User')}`}
