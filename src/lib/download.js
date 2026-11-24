@@ -24,19 +24,8 @@ export const downloadVideo = async (url, filename = 'pingup-video') => {
 
   const attachmentUrl = withCloudinaryAttachment(url);
 
-  if (isCloudinaryUrl(url)) {
-    const link = document.createElement('a');
-    link.href = attachmentUrl;
-    link.download = filename;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    return;
-  }
-
   try {
+    // Download as a blob so the browser never navigates or opens a new tab.
     const response = await fetch(url, { mode: 'cors' });
     if (!response.ok) throw new Error(`Download failed: ${response.status}`);
 
@@ -50,13 +39,17 @@ export const downloadVideo = async (url, filename = 'pingup-video') => {
     link.remove();
     window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
   } catch (error) {
-    console.error('Error downloading video:', error);
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    console.error('Blob download failed, trying attachment URL:', error);
+
+    // Same-tab navigation only; Cloudinary's attachment flag makes the browser
+    // save the file instead of showing a page.
+    if (isCloudinaryUrl(url)) {
+      const link = document.createElement('a');
+      link.href = attachmentUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
   }
 };
