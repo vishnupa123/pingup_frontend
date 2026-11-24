@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Play, Search, X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import UserCard from '../components/UserCard';
 import axios from 'axios';
 import { API_URL } from '../lib/api';
@@ -143,26 +143,19 @@ const Discover = () => {
     <div className='max-w-6xl w-full p-6'>
       <h1 className='text-2xl font-semibold text-blue-600 mb-6'>Discover</h1>
 
-      <div className='relative mb-8'>
-        <Search className='absolute left-3 top-3 text-gray-400' size={18} />
+      <div className='relative mb-6 max-w-md'>
+        <Search className='absolute left-3 top-2 text-gray-400' size={16} />
         <input
           type='text'
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder='Search by name or username...'
-          className='w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400'
+          className='w-full pl-9 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400'
         />
       </div>
 
       {/* Videos */}
       <section className='mb-8'>
-        <div className='flex items-center gap-2 mb-3'>
-          <h2 className='text-lg font-semibold text-gray-800'>Videos</h2>
-          <span className='text-xs text-gray-400'>
-            {videosLoading ? 'Loading...' : `${videos.length} videos`}
-          </span>
-        </div>
-
         {videosLoading ? (
           <p className='text-gray-500'>Loading videos...</p>
         ) : videos.length > 0 ? (
@@ -183,11 +176,6 @@ const Discover = () => {
                   className='pointer-events-none h-full w-full object-cover'
                 />
                 <div className='absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/20' />
-                <div className='absolute inset-0 flex items-center justify-center'>
-                  <span className='flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-900 shadow-md transition-transform group-hover:scale-105'>
-                    <Play size={18} fill='currentColor' className='ml-0.5' />
-                  </span>
-                </div>
                 <div className='absolute bottom-2 left-2 right-2 text-left'>
                   <p className='truncate text-xs font-semibold text-white'>@{getDisplayName(video)}</p>
                   {video.content && (
