@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Search, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import UserCard from '../components/UserCard';
+import ReelsViewer from '../components/ReelsViewer';
 import axios from 'axios';
 import { API_URL } from '../lib/api';
 
@@ -26,8 +27,7 @@ const Discover = () => {
   const [loading, setLoading] = useState(true);
   const [videosLoading, setVideosLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeVideo, setActiveVideo] = useState(null);
-  const videoRef = useRef(null);
+  const [activeVideoIndex, setActiveVideoIndex] = useState(null);
 
   const fetchInitialData = async () => {
     const token = localStorage.getItem('token');
@@ -117,32 +117,11 @@ const Discover = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  useEffect(() => {
-    if (!activeVideo) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const playTimer = window.setTimeout(() => {
-      const video = videoRef.current;
-      if (!video) return;
-      video.currentTime = 0;
-      const promise = video.play();
-      if (promise && typeof promise.catch === 'function') promise.catch(() => {});
-    }, 0);
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') setActiveVideo(null);
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.clearTimeout(playTimer);
-      window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [activeVideo]);
+  const updateVideo = (videoId, updater) => {
+    setVideos((previous) =>
+      previous.map((video) => (video._id === videoId ? updater(video) : video))
+    );
+  };
 
   return (
     <div className='max-w-6xl w-full p-6'>
@@ -165,14 +144,14 @@ const Discover = () => {
           <p className='text-gray-500'>Loading videos...</p>
         ) : videos.length > 0 ? (
           <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'>
-            {videos.map((video) => (
+            {videos.map((video, index) => (
               <div
                 key={video._id}
                 className='group relative aspect-[9/8] overflow-hidden rounded-xl border border-gray-200 bg-black shadow-sm hover:shadow-lg transition-shadow'
               >
                 <button
                   type='button'
-                  onClick={() => setActiveVideo(video)}
+                  onClick={() => setActiveVideoIndex(index)}
                   className='absolute inset-0 z-0 cursor-pointer'
                   aria-label={`Play video by ${getDisplayName(video)}`}
                 >
@@ -231,39 +210,14 @@ const Discover = () => {
         </div>
       </section>
 
-      {/* Shorts-style player */}
-      {activeVideo && (
-        <div
-          className='fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-3'
-          onClick={() => setActiveVideo(null)}
-        >
-          <button
-            type='button'
-            onClick={() => setActiveVideo(null)}
-            className='absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 cursor-pointer'
-            aria-label='Close video'
-          >
-            <X size={22} />
-          </button>
-
-          <div
-            className='relative h-[min(85vh,680px)] aspect-[9/16] max-w-[92vw] overflow-hidden rounded-2xl bg-black shadow-2xl'
-            onClick={(e) => e.stopPropagation()}
-          >
-            <video
-              ref={videoRef}
-              src={activeVideo.videoUrl}
-              controls
-              autoPlay
-              playsInline
-              loop
-              className='h-full w-full object-contain bg-black'
-            />
-            <div className='pointer-events-none absolute left-3 top-3 rounded-full bg-black/50 px-2 py-1 text-xs text-white backdrop-blur-sm'>
-              @{getDisplayName(activeVideo)}
-            </div>
-          </div>
-        </div>
+      {/* Instagram-style reels player */}
+      {activeVideoIndex !== null && videos[activeVideoIndex] && (
+        <ReelsViewer
+          videos={videos}
+          initialIndex={activeVideoIndex}
+          onClose={() => setActiveVideoIndex(null)}
+          onUpdateVideo={updateVideo}
+        />
       )}
     </div>
   );
