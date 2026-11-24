@@ -172,7 +172,7 @@ const Connection = () => {
 
         {/* Title */}
         <div className='mb-6'>
-          <h1 className='text-2xl font-semibold text-blue-600'>Connections</h1>
+          <h1 className='text-2xl font-semibold theme-gradient-text'>Connections</h1>
           <p className='text-sm text-gray-500'>Manage your connections easily</p>
         </div>
 
