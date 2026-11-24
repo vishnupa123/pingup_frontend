@@ -1,12 +1,12 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { Home, MessageCircle, Search, UserIcon, CirclePlus } from 'lucide-react'
+import { Home, MessageCircle, Search, UserIcon, Clapperboard } from 'lucide-react'
 import { useNotifications } from '../context/NotificationContext'
 
 const mobileNavItems = [
   { to: '/', label: 'Feed', Icon: Home },
   { to: '/messages', label: 'Messages', Icon: MessageCircle },
-  { to: '/create-post', label: 'Create', Icon: CirclePlus },
+  { to: '/reels', label: 'Reels', Icon: Clapperboard },
   { to: '/discover', label: 'Discover', Icon: Search },
   { to: '/profile', label: 'Profile', Icon: UserIcon },
 ]

@@ -7,6 +7,7 @@ import Messages from './pages/Messages'
 import Chat from './pages/Chat'
 import Connection from './pages/Connection'
 import Discover from './pages/Discover'
+import Reels from './pages/Reels'
 import Profilee from './pages/Profilee'
 import CreatePost from './pages/CreatePost'
 import Layout from './pages/Layout'
@@ -73,6 +74,7 @@ const App = () => {
             <Route path='messages/:userId' element={<Chat />} />
             <Route path='connections' element={<Connection/>} />
             <Route path='discover' element={<Discover/>} />
+            <Route path='reels' element={<Reels/>} />
             
             {/* FIX: Handle both routes to avoid "No routes matched" error */}
             <Route path='profile' element={<Profilee/>} />
