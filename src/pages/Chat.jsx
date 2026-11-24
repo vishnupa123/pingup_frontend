@@ -116,7 +116,7 @@ const Chat = () => {
   // Live updates from socket.io. The server broadcasts every saved message as
   // `receive_message`; we only keep the ones belonging to this conversation.
   useEffect(() => {
-    if (!socket || !me?.id || !userId || !canMessage) return undefined
+    if (!socket || !me?.id || !userId) return undefined
 
     const markIncomingSeen = async () => {
       try {
@@ -160,11 +160,20 @@ const Chat = () => {
       socket.off('receive_message', onReceive)
       socket.off('messages_seen', onSeen)
     }
-  }, [socket, me?.id, userId, canMessage])
+  }, [socket, me?.id, userId])
 
   // Opening a conversation (or receiving a message while it is open) clears its badge.
   useEffect(() => {
-    if (canMessage && userId && !loading) markSeen(userId)
+    if (!canMessage || !userId || loading) return
+
+    markSeen(userId)
+    axios
+      .post(
+        `${API_URL}/api/messages/seen/${userId}`,
+        {},
+        { headers: authHeaders(), withCredentials: true }
+      )
+      .catch((error) => console.error('Error marking conversation seen:', error))
   }, [canMessage, userId, loading, messages.length, markSeen])
 
   // Remove messages locally once their 2-day post-seen expiry has passed.
@@ -191,27 +200,17 @@ const Chat = () => {
 
     setSending(true)
     try {
-      if (socket?.connected) {
-        // The server saves to MongoDB and broadcasts `receive_message` to everyone,
-        // including this tab, so the message is added by the listener above.
-        socket.emit('send_message', {
-          sender: me.id,
-          receiver: userId,
-          message: body,
-        })
-        playSendSound()
-        setText('')
-      } else {
-        // Fallback when the socket is not connected: use the REST API.
-        const { data } = await axios.post(
-          `${API_URL}/api/messages/send`,
-          { sender: me.id, receiver: userId, message: body },
-          { headers: authHeaders(), withCredentials: true }
-        )
-        if (data?.data) setMessages((prev) => mergeMessages([...prev, data.data]))
-        playSendSound()
-        setText('')
-      }
+      // Always save through REST first. The response contains the saved message,
+      // so it appears immediately even if the socket is slow or not joined yet.
+      // The server also broadcasts receive_message, and mergeMessages dedupes it.
+      const { data } = await axios.post(
+        `${API_URL}/api/messages/send`,
+        { sender: me.id, receiver: userId, message: body },
+        { headers: authHeaders(), withCredentials: true }
+      )
+      if (data?.data) setMessages((prev) => mergeMessages([...prev, data.data]))
+      playSendSound()
+      setText('')
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to send message')
     } finally {
