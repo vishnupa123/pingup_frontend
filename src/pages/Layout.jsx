@@ -2,6 +2,7 @@ import React from 'react'
 import SideBar from '../components/SideBar'
 import BottomNav from '../components/BottomNav'
 import { Outlet, useNavigate } from 'react-router-dom'
+import { CirclePlus } from 'lucide-react'
 import Loading from '../components/Loading'
 import { assets } from '../assets/assets'
 
@@ -55,11 +56,19 @@ const Layout = () => {
 
           {/* 2. MOBILE HEADER — icons stay fixed while content scrolls */}
           <header className="sm:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-white/95 backdrop-blur border-b border-gray-100 flex items-center px-4">
+            <button
+              type='button'
+              onClick={() => { setSidebarOpen(false); navigate('/create-post') }}
+              className='absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full theme-gradient-bg text-white shadow-md cursor-pointer'
+              aria-label='Create post'
+            >
+              <CirclePlus className='w-5 h-5' />
+            </button>
             <img
               src={assets.logo}
               alt="PingUp"
               onClick={() => { setSidebarOpen(false); navigate('/') }}
-              className="absolute left-[6px] top-1/2 w-24 -translate-y-1/2 cursor-pointer"
+              className="absolute left-[52px] top-1/2 w-24 -translate-y-1/2 cursor-pointer"
             />
           </header>
 
