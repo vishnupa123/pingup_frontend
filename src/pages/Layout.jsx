@@ -54,12 +54,12 @@ const Layout = () => {
           )}
 
           {/* 2. MOBILE HEADER — icons stay fixed while content scrolls */}
-          <header className="sm:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-white/95 backdrop-blur border-b border-gray-100 flex items-center justify-start px-4">
+          <header className="sm:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-white/95 backdrop-blur border-b border-gray-100 flex items-center px-4">
             <img
               src={assets.logo}
               alt="PingUp"
               onClick={() => { setSidebarOpen(false); navigate('/') }}
-              className="w-24 cursor-pointer"
+              className="absolute left-[6px] top-1/2 w-24 -translate-y-1/2 cursor-pointer"
             />
           </header>
 
