@@ -142,13 +142,8 @@ const Login = () => {
         <div className='hidden md:flex flex-col justify-center px-12 py-16 flex-1'
           style={{ background: 'linear-gradient(135deg, #dbeafe 0%, #ede9fe 55%, #fce7f3 100%)' }}>
 
-          {/* Logo */}
-          <div className='flex items-center gap-2 mb-12'>
-            <svg xmlns='http://www.w3.org/2000/svg' className='w-6 h-6 text-indigo-600' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2.5} d='M13 10V3L4 14h7v7l9-11h-7z' />
-            </svg>
-            <span className='text-xl font-semibold text-indigo-700'>pingup</span>
-          </div>
+          {/* Main PingUp logo */}
+          <img src={assets.logo} alt='PingUp' className='w-40 mb-12' />
 
           {/* Social proof */}
           <div className='flex items-center gap-3 mb-6'>
