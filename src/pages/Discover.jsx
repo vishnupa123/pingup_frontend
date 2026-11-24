@@ -172,7 +172,7 @@ const Discover = () => {
                 type='button'
                 key={video._id}
                 onClick={() => setActiveVideo(video)}
-                className='group relative aspect-[9/16] overflow-hidden rounded-xl border border-gray-200 bg-black shadow-sm hover:shadow-lg transition-shadow cursor-pointer'
+                className='group relative aspect-[9/8] overflow-hidden rounded-xl border border-gray-200 bg-black shadow-sm hover:shadow-lg transition-shadow cursor-pointer'
                 aria-label={`Play video by ${getDisplayName(video)}`}
               >
                 <video
