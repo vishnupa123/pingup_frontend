@@ -101,6 +101,13 @@ const Chat = () => {
     return () => { cancelled = true }
   }, [contextMe?.id])
 
+  // Make sure this socket is registered in the user's room even if the
+  // initial connect happened before the user id was available.
+  useEffect(() => {
+    if (!socket?.connected || !me?.id) return
+    socket.emit('join', me.id)
+  }, [socket, connected, me?.id])
+
   // Load existing conversation: GET /api/messages/:otherUserId
   useEffect(() => {
     if (!userId || !me?.id) return undefined
@@ -125,6 +132,35 @@ const Chat = () => {
 
     loadMessages()
     return () => { cancelled = true }
+  }, [userId, me?.id])
+
+  // Safety net: poll the open conversation so messages still appear if a
+  // socket event is missed (reconnect, room join delay, or stale deployment).
+  useEffect(() => {
+    if (!userId || !me?.id) return undefined
+    let cancelled = false
+
+    const pollMessages = async () => {
+      if (document.visibilityState !== 'visible') return
+      try {
+        const { data } = await axios.get(`${API_URL}/api/messages/${userId}`, {
+          headers: authHeaders(),
+          withCredentials: true,
+        })
+        const list = Array.isArray(data) ? data : []
+        if (!cancelled && list.length) {
+          setMessages((prev) => mergeMessages([...prev, ...list]))
+        }
+      } catch {
+        // The initial load already reports errors; polling stays silent.
+      }
+    }
+
+    const timer = window.setInterval(pollMessages, 4000)
+    return () => {
+      cancelled = true
+      window.clearInterval(timer)
+    }
   }, [userId, me?.id])
 
   // Live updates from socket.io. The server broadcasts every saved message as
@@ -233,10 +269,10 @@ const Chat = () => {
 
   return (
     <div
-      className='flex flex-col w-full md:w-[70%] bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm relative h-[calc(100dvh-8.25rem)] max-h-[calc(100dvh-8.25rem)] sm:h-[100dvh] sm:max-h-[100dvh]'
+      className='flex flex-col w-full md:w-[70%] bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm relative h-[calc(100dvh-8.5rem)] max-h-[calc(100dvh-8.5rem)] sm:h-[100dvh] sm:max-h-[100dvh]'
     >
       {/* Header */}
-      <div className='bg-white px-4 md:px-6 py-3 md:py-4 border-b border-gray-100 flex items-center gap-3 shrink-0'>
+      <div className='sticky top-0 z-10 bg-white px-4 md:px-6 py-3 md:py-4 border-b border-gray-100 flex items-center gap-3 shrink-0'>
         <button
           type='button'
           onClick={() => navigate(`/profile/${userId}`)}
@@ -260,7 +296,7 @@ const Chat = () => {
       {/* Messages Feed */}
       <div
         ref={messagesContainerRef}
-        className='flex-1 p-3 md:p-5 overflow-y-auto space-y-3 bg-slate-50/30'
+        className='flex-1 min-h-0 p-3 md:p-5 overflow-y-auto space-y-3 bg-slate-50/30'
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}
       >
         <style>{`div::-webkit-scrollbar { display: none; }`}</style>
@@ -305,7 +341,7 @@ const Chat = () => {
       {canMessage ? (
       <form
         onSubmit={sendMsg}
-        className='bg-white px-3 pt-2 pb-3 border-t border-gray-100 flex flex-col gap-2 shrink-0 relative'
+        className='sticky bottom-0 z-10 bg-white px-3 pt-2 pb-3 border-t border-gray-100 flex flex-col gap-2 shrink-0 relative'
         style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
       >
         <div className='flex items-center gap-1.5 w-full'>
@@ -345,7 +381,7 @@ const Chat = () => {
         </div>
       </form>
       ) : (
-        <div className='bg-white px-4 py-4 border-t border-gray-100 text-center text-xs text-gray-500 shrink-0'>
+        <div className='sticky bottom-0 z-10 bg-white px-4 py-4 border-t border-gray-100 text-center text-xs text-gray-500 shrink-0'>
           Follow each other to send messages.
         </div>
       )}
