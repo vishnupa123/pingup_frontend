@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import { API_URL, authHeaders, isMutualFollow } from '../lib/api'
-import { countUnread, markConversationSeen } from '../lib/unread'
+import { countUnread, getLastSeen, markConversationSeen } from '../lib/unread'
 import { playReceiveSound } from '../lib/sound'
 import { useSocket } from './SocketContext'
 import { useMe } from './UserContext'
@@ -61,6 +61,34 @@ export const NotificationProvider = ({ children }) => {
             withCredentials: true,
           })
           const list = Array.isArray(messages) ? messages : []
+
+          // Migrate conversations that were seen before seenAt was stored on
+          // the server, then rely on Message.seenAt from here on.
+          const localSeenAt = getLastSeen(id, me.id)
+          if (localSeenAt) {
+            let migrated = false
+            list.forEach((msg) => {
+              const sentAt = new Date(msg?.createdAt || 0).getTime()
+              if (
+                String(msg?.sender) !== String(me.id) &&
+                !msg?.seenAt &&
+                sentAt <= localSeenAt
+              ) {
+                msg.seenAt = new Date(localSeenAt).toISOString()
+                migrated = true
+              }
+            })
+            if (migrated) {
+              axios
+                .post(
+                  `${API_URL}/api/messages/seen/${id}`,
+                  {},
+                  { headers: authHeaders(), withCredentials: true }
+                )
+                .catch(() => {})
+            }
+          }
+
           return {
             id,
             last: list.length ? list[list.length - 1] : null,
@@ -143,9 +171,9 @@ export const NotificationProvider = ({ children }) => {
 
   const markSeen = useCallback((conversationId) => {
     if (!conversationId) return
-    markConversationSeen(conversationId)
+    markConversationSeen(conversationId, me?.id)
     setCounts((prev) => ({ ...prev, [conversationId]: 0 }))
-  }, [])
+  }, [me?.id])
 
   const markAppReadByType = useCallback(async (type) => {
     try {

@@ -1,31 +1,31 @@
-// Frontend-only unread tracking. The Message model has no "read" flag, so we
-// store the last time each conversation was opened in localStorage.
-const STORAGE_KEY = 'pingup_message_seen'
+// Unread state is stored on the server as Message.seenAt so it survives
+// logout, reinstalls and different devices. localStorage is only a small
+// compatibility helper for migrating old locally-seen conversations.
+const storageKey = (myId) => `pingup_message_seen:${myId || 'anon'}`
 
-const readMap = () => {
+const readMap = (myId) => {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
+    return JSON.parse(localStorage.getItem(storageKey(myId)) || '{}')
   } catch {
     return {}
   }
 }
 
-export const getLastSeen = (conversationId) => readMap()[conversationId] || 0
+export const getLastSeen = (conversationId, myId) => readMap(myId)[conversationId] || 0
 
-export const markConversationSeen = (conversationId) => {
+export const markConversationSeen = (conversationId, myId) => {
   if (!conversationId) return
-  const map = readMap()
+  const key = storageKey(myId)
+  const map = readMap(myId)
   map[conversationId] = Date.now()
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(map))
+  localStorage.setItem(key, JSON.stringify(map))
 }
 
 export const countUnread = (messages = [], myId, conversationId) => {
-  if (!myId || !conversationId) return 0
-  const seen = getLastSeen(conversationId)
+  if (!myId) return 0
 
   return messages.filter((msg) => {
     if (String(msg?.sender) === String(myId)) return false
-    const sentAt = new Date(msg?.createdAt || 0).getTime()
-    return sentAt > seen
+    return !msg?.seenAt
   }).length
 }
