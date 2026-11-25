@@ -73,7 +73,7 @@ const Layout = () => {
             <button
               type='button'
               onClick={() => { setSidebarOpen(false); navigate('/create-post') }}
-              className='absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-pink-600 hover:bg-pink-50 cursor-pointer'
+              className='absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-[#4F39F6] hover:bg-[#4F39F6]/10 cursor-pointer'
               aria-label='Create post'
             >
               <CirclePlus className='w-6 h-6' />
