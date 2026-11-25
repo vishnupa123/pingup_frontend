@@ -95,8 +95,8 @@ const Feed = () => {
   if (isLoading) return <Loading />;
 
   return (
-    <div className="max-w-[1400px] mx-auto sm:px-10 pt-1 pb-4 sm:py-4 flex flex-col lg:flex-row gap-8 justify-between items-start">
-      <div className="flex-1 w-full lg:max-w-[850px]">
+    <div className="max-w-[1400px] mx-auto sm:px-10 pt-1 pb-4 sm:py-4 flex flex-col lg:flex-row gap-6 justify-start items-start">
+      <div className="flex-1 w-full min-w-0">
         <div className="mb-2 sm:mt-1 sm:mb-3">
           <StoriesRow />
         </div>
