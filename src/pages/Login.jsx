@@ -1,7 +1,34 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Eye, EyeOff } from 'lucide-react';
 import { API_URL } from '../lib/api';
 import { assets } from '../assets/assets';
+
+const PasswordInput = ({ value, onChange, placeholder, className, autoComplete }) => {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className='relative mb-4'>
+      <input
+        type={visible ? 'text' : 'password'}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        className={`${className} pr-11 mb-0`}
+        required
+      />
+      <button
+        type='button'
+        onClick={() => setVisible((current) => !current)}
+        className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer'
+        aria-label={visible ? 'Hide password' : 'Show password'}
+      >
+        {visible ? <EyeOff className='w-5 h-5' /> : <Eye className='w-5 h-5' />}
+      </button>
+    </div>
+  );
+};
 
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
@@ -183,8 +210,8 @@ const Login = () => {
             <form onSubmit={handleSubmit}>
               <input type='email' value={email} onChange={e => setEmail(e.target.value)}
                 placeholder='Email' className={inputClass} required />
-              <input type='password' value={password} onChange={e => setPassword(e.target.value)}
-                placeholder='Password' className={inputClass} required />
+              <PasswordInput value={password} onChange={e => setPassword(e.target.value)}
+                placeholder='Password' className={inputClass} autoComplete='current-password' />
               <button type='submit' disabled={loading} className={btnPrimary}>
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
@@ -216,10 +243,10 @@ const Login = () => {
               )}
               <input type='text' value={otp} onChange={e => setOtp(e.target.value.trim())}
                 placeholder='Enter OTP from your email' className={inputClass} required />
-              <input type='password' value={password} onChange={e => setPassword(e.target.value)}
-                placeholder='Create password' className={inputClass} required />
-              <input type='password' value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
-                placeholder='Confirm password' className={inputClass} required />
+              <PasswordInput value={password} onChange={e => setPassword(e.target.value)}
+                placeholder='Create password' className={inputClass} autoComplete='new-password' />
+              <PasswordInput value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+                placeholder='Confirm password' className={inputClass} autoComplete='new-password' />
               <button type='button' onClick={() => { setStep(1); setError(''); setOtpSent(false); }} className={btnBack}>
                 ← Back
               </button>
