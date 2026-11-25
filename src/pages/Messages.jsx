@@ -2,11 +2,24 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useNotifications } from '../context/NotificationContext'
+import { useSocket } from '../context/SocketContext'
 import { API_URL, authHeaders, getCurrentUser } from '../lib/api'
+
+const getPreviewText = (msg, myId) => {
+  if (!msg) return null
+  const raw = typeof msg.message === 'string' ? msg.message : ''
+  if (!raw) return null
+  if (raw.startsWith('enc:v1:')) return 'New message'
+
+  const senderId = msg.sender?._id || msg.sender
+  const prefix = String(senderId) === String(myId) ? 'You: ' : ''
+  return `${prefix}${raw}`
+}
 
 const Messages = () => {
   const navigate = useNavigate()
-  const { users, counts, totalUnread, markSeen, loading } = useNotifications()
+  const { onlineUsers } = useSocket()
+  const { users, counts, previews, totalUnread, markSeen, loading } = useNotifications()
   const [friends, setFriends] = useState([])
   const me = getCurrentUser()
 
@@ -38,15 +51,15 @@ const Messages = () => {
 
   if (loading) {
     return (
-      <div className='min-h-screen bg-slate-100 text-gray-400 text-sm flex items-center justify-center'>
+      <div className='min-h-screen bg-white text-gray-400 text-sm flex items-center justify-center'>
         Loading chats...
       </div>
     )
   }
 
   return (
-    <div className='min-h-screen  bg-slate-100'>
-      <div className='max-w-5xl p-6 w-full bg-white rounded-xl shadow-sm'>
+    <div className='min-h-screen bg-white'>
+      <div className='max-w-5xl p-6 w-full'>
         <div className='mb-6'>
           <h1 className='text-2xl font-semibold text-blue-600 '>Messages</h1>
           <p className='text-xs text-gray-500'>Talk to Your Friends and Family</p>
@@ -60,6 +73,8 @@ const Messages = () => {
             users.map((user) => {
               const id = user._id || user.id
               const unread = counts[id] || 0
+              const online = onlineUsers.includes(String(id))
+              const preview = getPreviewText(previews[id], me?.id || me?._id)
 
               return (
                 <div
@@ -88,13 +103,18 @@ const Messages = () => {
                         {unread > 99 ? '99+' : unread}
                       </span>
                     )}
+                    {online && (
+                      <span className='pointer-events-none absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white shadow-sm' />
+                    )}
                   </div>
 
-                  <div className='flex-1'>
+                  <div className='flex-1 min-w-0'>
                     <p className='font-semibold text-gray-800'>
                       {user.fullName || user.full_name || user.username}
                     </p>
-                    <p className='text-xs text-gray-400'>@{user.username}</p>
+                    <p className='text-xs text-gray-400 truncate'>
+                      {preview || `@${user.username}`}
+                    </p>
                   </div>
                 </div>
               )
@@ -107,6 +127,7 @@ const Messages = () => {
                   <div className='flex flex-wrap gap-4 pb-2'>
                     {friends.map((friend) => {
                       const id = friend._id || friend.id
+                      const online = onlineUsers.includes(String(id))
                       return (
                         <button
                           key={id}
@@ -115,11 +136,16 @@ const Messages = () => {
                           className='flex flex-col items-center gap-2 cursor-pointer'
                           aria-label={`Chat with ${friend.fullName || friend.username}`}
                         >
-                          <img
-                            src={friend.profilePic || friend.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.fullName || friend.username || 'User')}`}
-                            alt={friend.fullName || friend.username}
-                            className='w-14 h-14 rounded-full object-cover border border-gray-200'
-                          />
+                          <span className='relative block'>
+                            <img
+                              src={friend.profilePic || friend.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.fullName || friend.username || 'User')}`}
+                              alt={friend.fullName || friend.username}
+                              className='w-14 h-14 rounded-full object-cover border border-gray-200'
+                            />
+                            {online && (
+                              <span className='pointer-events-none absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white shadow-sm' />
+                            )}
+                          </span>
                           <span className='text-[11px] text-gray-600 w-16 truncate text-center'>{friend.username || friend.fullName || 'User'}</span>
                         </button>
                       )

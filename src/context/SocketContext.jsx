@@ -7,6 +7,7 @@ const SocketContext = createContext(null)
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null)
   const [connected, setConnected] = useState(false)
+  const [onlineUsers, setOnlineUsers] = useState([])
   const token = getToken()
 
   useEffect(() => {
@@ -25,11 +26,17 @@ export const SocketProvider = ({ children }) => {
       const me = getCurrentUser()
       if (me?.id) instance.emit('join', me.id)
     }
-    const handleDisconnect = () => setConnected(false)
+    const handleDisconnect = () => {
+      setConnected(false)
+      setOnlineUsers([])
+    }
+    const handleOnlineUsers = (ids) =>
+      setOnlineUsers(Array.isArray(ids) ? ids.map(String) : [])
     const handleError = (error) => console.error('Socket connection error:', error.message)
 
     instance.on('connect', handleConnect)
     instance.on('disconnect', handleDisconnect)
+    instance.on('online_users', handleOnlineUsers)
     instance.on('connect_error', handleError)
     setSocket(instance)
 
@@ -39,14 +46,19 @@ export const SocketProvider = ({ children }) => {
       clearTimeout(connectTimer)
       instance.off('connect', handleConnect)
       instance.off('disconnect', handleDisconnect)
+      instance.off('online_users', handleOnlineUsers)
       instance.off('connect_error', handleError)
       instance.disconnect()
       setSocket(null)
       setConnected(false)
+      setOnlineUsers([])
     }
   }, [token])
 
-  const value = useMemo(() => ({ socket, connected }), [socket, connected])
+  const value = useMemo(
+    () => ({ socket, connected, onlineUsers }),
+    [socket, connected, onlineUsers]
+  )
 
   return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>
 }

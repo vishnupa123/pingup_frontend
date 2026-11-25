@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Send, Image as ImageIcon, Smile } from 'lucide-react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
@@ -34,7 +34,8 @@ const markConversationSeenOnServer = async (otherUserId) => {
 
 const Chat = () => {
   const { userId } = useParams()
-  const { socket, connected } = useSocket()
+  const navigate = useNavigate()
+  const { socket, connected, onlineUsers } = useSocket()
   const contextMe = useMe()
   const [me, setMe] = useState(contextMe)
   const { markSeen } = useNotifications()
@@ -228,6 +229,7 @@ const Chat = () => {
 
   const displayName = chatUser?.fullName || chatUser?.full_name || chatUser?.username || 'Conversation'
   const avatar = chatUser?.profilePic || chatUser?.profile_picture || 'https://via.placeholder.com/150'
+  const otherOnline = onlineUsers.includes(String(userId))
 
   return (
     <div
@@ -235,12 +237,22 @@ const Chat = () => {
     >
       {/* Header */}
       <div className='bg-white px-4 md:px-6 py-3 md:py-4 border-b border-gray-100 flex items-center gap-3 shrink-0'>
-        <img src={avatar} alt={displayName} className='w-10 h-10 md:w-11 md:h-11 rounded-full object-cover flex-shrink-0' />
+        <button
+          type='button'
+          onClick={() => navigate(`/profile/${userId}`)}
+          className='relative block shrink-0 cursor-pointer'
+          aria-label={`View ${displayName}'s profile`}
+        >
+          <img src={avatar} alt={displayName} className='w-10 h-10 md:w-11 md:h-11 rounded-full object-cover hover:opacity-90 transition' />
+          {otherOnline && (
+            <span className='pointer-events-none absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-white' />
+          )}
+        </button>
         <div className='flex flex-col min-w-0'>
           <p className='font-semibold text-gray-800 text-sm leading-tight truncate'>{displayName}</p>
           <p className='text-[11px] text-gray-400 mt-0.5 truncate'>
             {chatUser?.username ? `@${chatUser.username}` : 'Conversation'}
-            {connected ? ' · Online' : ' · Connecting...'}
+            {connected ? (otherOnline ? ' · Online' : ' · Offline') : ' · Connecting...'}
           </p>
         </div>
       </div>
@@ -264,6 +276,10 @@ const Chat = () => {
           const time = msg.createdAt
             ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             : ''
+          const rawText = typeof msg.message === 'string' ? msg.message : ''
+          const displayText = rawText.startsWith('enc:v1:')
+            ? 'Unable to display message'
+            : rawText
 
           return (
             <div key={msg._id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
@@ -272,7 +288,7 @@ const Chat = () => {
                   ? 'bg-blue-600 text-white rounded-tr-none'
                   : 'bg-white text-gray-700 rounded-tl-none border border-gray-100'
               }`}>
-                <p className='px-1.5 py-0.5 break-words text-xs leading-relaxed'>{msg.message}</p>
+                <p className='px-1.5 py-0.5 break-words text-xs leading-relaxed'>{displayText}</p>
                 <span className={`block text-[9px] mt-1 text-right px-1.5 ${isMe ? 'text-pink-100' : 'text-gray-400'}`}>
                   {time}
                 </span>
