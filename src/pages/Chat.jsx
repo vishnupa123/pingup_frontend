@@ -45,8 +45,11 @@ const Chat = () => {
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [otherTyping, setOtherTyping] = useState(false)
 
   const messagesContainerRef = useRef(null)
+  const typingTimerRef = useRef(null)
+  const lastTypingEmitRef = useRef(0)
 
   // Declared before the effects that depend on it.
   const canMessage = isMutualFollow(me, chatUser)
@@ -167,6 +170,7 @@ const Chat = () => {
   // `receive_message`; we only keep the ones belonging to this conversation.
   useEffect(() => {
     if (!socket || !me?.id || !userId) return undefined
+    setOtherTyping(false)
 
     const markIncomingSeen = async () => {
       try {
@@ -200,13 +204,34 @@ const Chat = () => {
       )
     }
 
+    const onTyping = (data) => {
+      if (String(data?.sender) === String(userId)) setOtherTyping(true)
+    }
+    const onStopTyping = (data) => {
+      if (String(data?.sender) === String(userId)) setOtherTyping(false)
+    }
+
     socket.on('receive_message', onReceive)
     socket.on('messages_seen', onSeen)
+    socket.on('typing', onTyping)
+    socket.on('stop_typing', onStopTyping)
     return () => {
       socket.off('receive_message', onReceive)
       socket.off('messages_seen', onSeen)
+      socket.off('typing', onTyping)
+      socket.off('stop_typing', onStopTyping)
     }
   }, [socket, me?.id, userId])
+
+  useEffect(
+    () => () => {
+      if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current)
+      if (socket?.connected && me?.id && userId) {
+        socket.emit('stop_typing', { sender: me.id, receiver: userId })
+      }
+    },
+    [socket, me?.id, userId]
+  )
 
   // Opening a conversation (or receiving a message while it is open) clears its badge.
   useEffect(() => {
@@ -238,16 +263,57 @@ const Chat = () => {
     if (container) container.scrollTop = container.scrollHeight
   }, [messages])
 
+  const stopTyping = () => {
+    if (typingTimerRef.current) {
+      window.clearTimeout(typingTimerRef.current)
+      typingTimerRef.current = null
+    }
+    if (socket?.connected && me?.id && userId) {
+      socket.emit('stop_typing', { sender: me.id, receiver: userId })
+    }
+  }
+
+  const handleTextChange = (event) => {
+    const value = event.target.value
+    setText(value)
+
+    if (!socket?.connected || !me?.id || !userId) return
+
+    const now = Date.now()
+    if (now - lastTypingEmitRef.current > 700) {
+      socket.emit('typing', { sender: me.id, receiver: userId })
+      lastTypingEmitRef.current = now
+    }
+
+    if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current)
+    typingTimerRef.current = window.setTimeout(() => {
+      socket.emit('stop_typing', { sender: me.id, receiver: userId })
+      typingTimerRef.current = null
+    }, 1200)
+  }
+
   const sendMsg = async (e) => {
     e.preventDefault()
     const body = text.trim()
     if (!body || !userId || !me?.id || !canMessage) return
 
+    stopTyping()
+
+    // Socket path saves and broadcasts immediately, so it is faster than REST.
+    if (socket?.connected) {
+      socket.emit('send_message', {
+        sender: me.id,
+        receiver: userId,
+        message: body,
+      })
+      playSendSound()
+      setText('')
+      return
+    }
+
+    // REST fallback when the socket is not connected.
     setSending(true)
     try {
-      // Always save through REST first. The response contains the saved message,
-      // so it appears immediately even if the socket is slow or not joined yet.
-      // The server also broadcasts receive_message, and mergeMessages dedupes it.
       const { data } = await axios.post(
         `${API_URL}/api/messages/send`,
         { sender: me.id, receiver: userId, message: body },
@@ -266,6 +332,9 @@ const Chat = () => {
   const displayName = chatUser?.fullName || chatUser?.full_name || chatUser?.username || 'Conversation'
   const avatar = chatUser?.profilePic || chatUser?.profile_picture || 'https://via.placeholder.com/150'
   const otherOnline = onlineUsers.includes(String(userId))
+  const lastSeenId = [...messages]
+    .reverse()
+    .find((msg) => String(msg.sender) === String(me?.id) && msg.seenAt)?._id
 
   return (
     <div
@@ -286,9 +355,15 @@ const Chat = () => {
         </button>
         <div className='flex flex-col min-w-0'>
           <p className='font-semibold text-gray-800 text-sm leading-tight truncate'>{displayName}</p>
-          <p className='text-[11px] text-gray-400 mt-0.5 truncate'>
-            {chatUser?.username ? `@${chatUser.username}` : 'Conversation'}
-            {connected ? (otherOnline ? ' · Online' : ' · Offline') : ' · Connecting...'}
+          <p className='text-[11px] mt-0.5 truncate'>
+            {otherTyping ? (
+              <span className='text-pink-500'>typing...</span>
+            ) : (
+              <span className='text-gray-400'>
+                {chatUser?.username ? `@${chatUser.username}` : 'Conversation'}
+                {connected ? (otherOnline ? ' · Online' : ' · Offline') : ' · Connecting...'}
+              </span>
+            )}
           </p>
         </div>
       </div>
@@ -328,7 +403,7 @@ const Chat = () => {
                 <span className={`block text-[9px] mt-1 text-right px-1.5 ${isMe ? 'text-pink-100' : 'text-gray-400'}`}>
                   {time}
                 </span>
-                {isMe && msg.seenAt && (
+                {isMe && msg.seenAt && msg._id === lastSeenId && (
                   <span className='block text-[9px] text-right px-1.5 text-pink-100'>Seen</span>
                 )}
               </div>
@@ -362,7 +437,7 @@ const Chat = () => {
           <input
             type='text'
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={handleTextChange}
             placeholder={`Message ${displayName}...`}
             className='flex-1 bg-gray-50 border border-gray-100 text-sm md:text-xs px-3 py-2.5 rounded-xl focus:outline-none focus:border-pink-300 transition-colors text-gray-700 placeholder-gray-400 min-w-0'
           />
