@@ -45,7 +45,7 @@ const Chat = () => {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
 
-  const messageEndRef = useRef(null)
+  const messagesContainerRef = useRef(null)
 
   // Declared before the effects that depend on it.
   const canMessage = isMutualFollow(me, chatUser)
@@ -194,8 +194,11 @@ const Chat = () => {
     return () => window.clearInterval(timer)
   }, [])
 
+  // Scroll only the messages list. scrollIntoView would also scroll the outer
+  // Layout container and hide the contact/header behind the sticky header.
   useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const container = messagesContainerRef.current
+    if (container) container.scrollTop = container.scrollHeight
   }, [messages])
 
   const sendMsg = async (e) => {
@@ -244,6 +247,7 @@ const Chat = () => {
 
       {/* Messages Feed */}
       <div
+        ref={messagesContainerRef}
         className='flex-1 p-3 md:p-5 overflow-y-auto space-y-3 bg-slate-50/30'
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}
       >
@@ -279,7 +283,6 @@ const Chat = () => {
             </div>
           )
         })}
-        <div ref={messageEndRef} />
       </div>
 
       {/* Footer Input — only shown when both users follow each other */}

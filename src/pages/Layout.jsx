@@ -1,7 +1,7 @@
 import React from 'react'
 import SideBar from '../components/SideBar'
 import BottomNav from '../components/BottomNav'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { CirclePlus } from 'lucide-react'
 import Loading from '../components/Loading'
 import { assets } from '../assets/assets'
@@ -10,7 +10,15 @@ const Layout = () => {
   const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
   const touchStartRef = React.useRef({ x: 0, y: 0 })
+  const mainRef = React.useRef(null)
+  const location = useLocation()
   const navigate = useNavigate()
+
+  // Reset the outer scroll area when routes change so a chat always opens
+  // with the contact header visible.
+  React.useEffect(() => {
+    if (mainRef.current) mainRef.current.scrollTop = 0
+  }, [location.pathname])
 
   // Swipe from the left edge to open the sidebar; swipe left to close it.
   const handleTouchStart = (event) => {
@@ -73,7 +81,7 @@ const Layout = () => {
           </header>
 
           {/* 3. MAIN CONTENT AREA */}
-          <div className="flex-1 w-full bg-slate-50 overflow-y-auto no-scrollbar relative pt-14 sm:pt-0 pb-20 sm:pb-0">
+          <div ref={mainRef} className="flex-1 w-full bg-slate-50 overflow-y-auto no-scrollbar relative pt-14 sm:pt-0 pb-20 sm:pb-0">
             <Outlet />
           </div>
 
