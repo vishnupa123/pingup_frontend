@@ -19,7 +19,7 @@ const getPreviewText = (msg, myId) => {
 const Messages = () => {
   const navigate = useNavigate()
   const { onlineUsers } = useSocket()
-  const { users, counts, previews, totalUnread, markSeen, loading } = useNotifications()
+  const { users, counts, previews, totalUnread, markSeen, loading, refresh } = useNotifications()
   const [friends, setFriends] = useState([])
   const me = getCurrentUser()
 
@@ -43,6 +43,10 @@ const Messages = () => {
     }
     loadFriends()
   }, [me?.id])
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
 
   const openChat = (id) => {
     markSeen(id) // clears this conversation's notification

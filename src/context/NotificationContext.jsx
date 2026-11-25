@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import { API_URL, authHeaders, isMutualFollow } from '../lib/api'
 import { countUnread, markConversationSeen } from '../lib/unread'
@@ -12,6 +12,7 @@ export const NotificationProvider = ({ children }) => {
   const { socket } = useSocket()
   const me = useMe()
   const [users, setUsers] = useState([])
+  const usersRef = useRef(new Set())
   const [counts, setCounts] = useState({})
   const [previews, setPreviews] = useState({})
   const [loading, setLoading] = useState(true)
@@ -20,6 +21,28 @@ export const NotificationProvider = ({ children }) => {
   // Depends on the whole user object: right after login localStorage only has
   // id/name, and UserProvider replaces it with followers/following once
   // /api/users/me resolves. That update must trigger a fresh computation.
+  const addConversationUser = useCallback(async (otherId) => {
+    if (!me?.id || !otherId) return
+    const id = String(otherId)
+    if (usersRef.current.has(id)) return
+    usersRef.current.add(id)
+
+    try {
+      const { data } = await axios.get(`${API_URL}/api/users/profile/${id}`, {
+        headers: authHeaders(),
+        withCredentials: true,
+      })
+      const user = data?.user
+      if (user && isMutualFollow(me, user)) {
+        setUsers((prev) =>
+          prev.some((item) => String(item._id || item.id) === id) ? prev : [...prev, user]
+        )
+      }
+    } catch {
+      // Keep the badge/count even if the profile lookup fails.
+    }
+  }, [me])
+
   const refresh = useCallback(async () => {
     if (!me?.id) return
     try {
@@ -56,6 +79,7 @@ export const NotificationProvider = ({ children }) => {
       })
 
       setUsers(mutualUsers)
+      usersRef.current = new Set(mutualUsers.map((user) => String(user._id || user.id)))
       setCounts(nextCounts)
       setPreviews(nextPreviews)
     } catch (error) {
@@ -80,6 +104,14 @@ export const NotificationProvider = ({ children }) => {
     refreshAppNotifications()
   }, [refresh, refreshAppNotifications])
 
+  // Keep badges and the conversation list in sync if a socket event is missed.
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') refresh()
+    }, 15000)
+    return () => window.clearInterval(timer)
+  }, [refresh])
+
   // Live incoming messages increase the badge and update the preview.
   useEffect(() => {
     if (!socket || !me?.id) return undefined
@@ -92,6 +124,7 @@ export const NotificationProvider = ({ children }) => {
       setPreviews((prev) => ({ ...prev, [otherId]: msg }))
       if (!fromMe) {
         setCounts((prev) => ({ ...prev, [otherId]: (prev[otherId] || 0) + 1 }))
+        addConversationUser(otherId)
         playReceiveSound()
       }
     }
@@ -106,7 +139,7 @@ export const NotificationProvider = ({ children }) => {
       socket.off('receive_message', onReceive)
       socket.off('notification', onAppNotification)
     }
-  }, [socket, me?.id])
+  }, [socket, me?.id, addConversationUser])
 
   const markSeen = useCallback((conversationId) => {
     if (!conversationId) return
