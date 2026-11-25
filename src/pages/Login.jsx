@@ -21,7 +21,7 @@ const PasswordInput = ({ value, onChange, placeholder, className, autoComplete }
       <button
         type='button'
         onClick={() => setVisible((current) => !current)}
-        className='absolute right-3 top-1/2 -mt-0.5 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer'
+        className='absolute right-3 top-1/2 -mt-1 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer'
         aria-label={visible ? 'Hide password' : 'Show password'}
       >
         {visible ? <EyeOff className='w-5 h-5' /> : <Eye className='w-5 h-5' />}
